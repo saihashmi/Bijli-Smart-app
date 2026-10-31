@@ -633,7 +633,7 @@ footer .tag{font:400 italic 1.1rem var(--f-serif);color:var(--fg-2)}
   </div>
 </dialog>
 
-<script src="content.js"></script>
+<script src="content.js?v=20261031"></script>
 <script>
 (function(){
   document.documentElement.classList.add('js');
@@ -715,7 +715,7 @@ footer .tag{font:400 italic 1.1rem var(--f-serif);color:var(--fg-2)}
   set('#jT',S.journeyTitle); set('#jTi',S.journeyTitleItalic); set('#jText',S.journeyText); set('#bigNum',S.journeyNumber);
   $('#tl').innerHTML=(S.timeline||[]).map(t=>`<li><div class="row"><h3>${esc(t.role)}</h3><span class="date">${esc(t.when)}</span></div><span class="org">${esc(t.org)}</span><p>${esc(t.text)}</p></li>`).join('');
   $('#miles').innerHTML=(S.milestones||[]).map(m=>`<div><time>${esc(m.when)}</time><span>${esc(m.text)}</span></div>`).join('');
-  $('#workGrid').innerHTML=(S.work||[]).map(w=>{let host='';try{host=new URL(w.url).hostname}catch(e){}
+  if(S.work) $('#workGrid').innerHTML=(S.work||[]).map(w=>{let host='';try{host=new URL(w.url).hostname}catch(e){}
     return `<article class="wcard reveal${w.wide?' wide':''}"><a class="shot" href="${esc(w.url)}" target="_blank" rel="noopener" aria-label="Open ${esc(w.title)} (opens in a new tab)"><span class="bar"><i></i><i></i><i></i><span>${esc(host)}</span></span><span class="frame"><img src="${esc(w.img)}" alt="Screenshot of ${esc(w.title)}" width="720" height="450" loading="lazy"></span></a><div class="wbody"><span class="eyebrow">${esc(w.kind)}</span><h3>${esc(w.title)}</h3><p>${esc(w.text)}</p><div class="wtags">${(w.tags||[]).map(t=>`<span>${esc(t)}</span>`).join('')}</div><a class="pill" href="${esc(w.url)}" target="_blank" rel="noopener">Visit site <svg><use href="#i-arr"/></svg></a></div></article>`}).join('');
   const sk=(S.skills||[]).map(s=>`<span>${esc(s)}</span>`).join('');
   $('#track').innerHTML=sk+sk.replace(/<span>/g,'<span aria-hidden="true">');
