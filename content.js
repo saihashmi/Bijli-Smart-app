@@ -33,7 +33,7 @@ window.SITE = {
     { value: "24/7", label: "Medical approvals, every day" },
     { value: "02",   label: "Awards: 24/7 Center launch & Power BI Best Performer" },
     { value: "05",   label: "Medical officers trained and supervised", lit: true },
-    { value: "07",   label: "Web projects built and live" }
+    { value: "09",   label: "Web projects built and live" }
   ],
 
   aboutTitle: "From Clinical Insight to",
@@ -160,12 +160,15 @@ window.SITE = {
     { title: "BijliSmart", kind: "Electricity bill estimator", url: "https://bijlismart.syedasifhashmi.com/", img: "assets/work/bijlismart.webp",
       text: "Estimate electricity use and bills in Pakistan from your appliances or meter readings, see how tariff slabs change the bill, and plan savings, in English or Urdu.",
       tags: ["Calculator", "English & Urdu"] },
-    { title: "Raftaar", kind: "Internet speed test", url: "https://raftar.syedasifhashmi.com/", img: "assets/work/raftaar.webp",
-      text: "Measure ping, jitter, download and upload speed in about 25 seconds, right in the browser, with a history of past tests. No app needed.",
-      tags: ["Web app", "Networking"] },
     { title: "ICD-10 Code Finder", kind: "Medical coding tool", url: "https://icd10.syedasifhashmi.com/", img: "assets/work/icd10.webp",
       text: "Search 74,879 billable FY2027 ICD-10-CM diagnosis codes and ICD-10-PCS procedure codes by code or keyword, built from the official CMS code files. Tap a code to copy it.",
       tags: ["ICD-10-CM", "ICD-10-PCS", "Medical coding"] },
+    { title: "Raftaar", kind: "Internet speed test", url: "https://raftar.syedasifhashmi.com/", img: "assets/work/raftaar.webp",
+      text: "Measure ping, jitter, download and upload speed in about 25 seconds, right in the browser, with a history of past tests. No app needed.",
+      tags: ["Web app", "Networking"] },
+    { title: "House Price Predictor", kind: "AI app · Karachi real estate", url: "https://syedasifhashmi.com/houseprice/", img: "assets/work/houseprice.webp", wide: true,
+      text: "Estimates a Karachi property's market value from location, covered area, bedrooms, bathrooms and age with a regression model trained on local sales, then uses Google Gemini to explain the main price drivers and suggest improvements.",
+      tags: ["Regression model", "Gemini AI", "PHP"] },
     { title: "Taleem Dost", kind: "University admissions guide", url: "https://taleemdost.syedasifhashmi.com/", img: "assets/work/taleemdost.webp",
       text: "Shows which Pakistani university programs your SSC and HSSC marks qualify for, with links to official requirements and scholarships. Free, no sign-up.",
       tags: ["Education", "Pakistan"] },
@@ -174,7 +177,10 @@ window.SITE = {
       tags: ["Geolocation", "Maps"] },
     { title: "PET Solutions", kind: "Business website", url: "https://petsolutions.syedasifhashmi.com/", img: "assets/work/petsolutions.webp",
       text: "A website for a PET preform and bottle manufacturer: product range, applications, FAQs and a product enquiry flow.",
-      tags: ["Business site", "Enquiries"] }
+      tags: ["Business site", "Enquiries"] },
+    { title: "Diagram & Notes Digitizer", kind: "AI vision app", url: "https://syedasifhashmi.com/digital/", img: "assets/work/digitizer.webp", wide: true,
+      text: "Upload a photo of a diagram, flowchart, whiteboard or handwritten notes and get structured notes, tables, connections and clean Markdown to copy or download.",
+      tags: ["Vision AI", "Markdown", "PHP"] }
   ],
 
   skills: ["Healthcare management", "Health insurance", "Digital transformation", "Data analytics", "AI implementation", "Power BI", "Web development", "Team building", "Medical case management", "On-call facilitation of insured members", "Medical facilities", "Pre-authorization", "Medical claims", "ICD-10 coding", "Policy interpretation", "Turnaround-time analysis", "Excel", "BI dashboards", "Process automation", "Generative AI", "Team leadership", "Stakeholder coordination"]
