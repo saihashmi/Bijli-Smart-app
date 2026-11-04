@@ -33,7 +33,7 @@ window.SITE = {
     { value: "24/7", label: "Medical approvals, every day" },
     { value: "02",   label: "Awards: 24/7 Center launch & Power BI Best Performer" },
     { value: "05",   label: "Medical officers trained and supervised", lit: true },
-    { value: "10",   label: "Web projects built and live" }
+    { value: "11",   label: "Web projects built and live" }
   ],
 
   aboutTitle: "From Clinical Insight to",
@@ -169,6 +169,15 @@ window.SITE = {
     { title: "House Price Predictor", kind: "AI app · Karachi real estate", url: "https://syedasifhashmi.com/houseprice/", img: "assets/work/houseprice.webp", wide: true,
       text: "Estimates a Karachi property's market value from location, covered area, bedrooms, bathrooms and age with a regression model trained on local sales, then uses Google Gemini to explain the main price drivers and suggest improvements.",
       tags: ["Regression model", "Gemini AI", "PHP"] },
+    { title: "Diagram & Notes Digitizer", kind: "AI vision app", url: "https://syedasifhashmi.com/digital/", img: "assets/work/digitizer.webp",
+      text: "Upload a photo of a diagram, flowchart, whiteboard or handwritten notes and get structured notes, tables, connections and clean Markdown to copy or download.",
+      tags: ["Vision AI", "Markdown", "PHP"] },
+    { title: "PharmaPulse Field Intelligence", kind: "Pharma field-force app · Prototype", url: "https://pharmapulse-field.lovable.app/", img: "assets/work/pharmapulse.webp",
+      text: "Helps pharmaceutical field teams plan daily doctor visits with priority scores, follow an ordered route map, and keep healthcare-professional profiles and visit history. Managers get coverage and productivity dashboards. Runs on fictional demo data.",
+      tags: ["Route planning", "Dashboards", "Role-based demo"] },
+    { title: "Dr. A-Team", kind: "Browser game · Space mission", url: "https://ateam.syedasifhashmi.com/", img: "assets/work/ateam.webp",
+      text: "A space-opera action game: fly the ISV Vanguard, route power between systems, use your crew's abilities and get the Hespera colonists out alive. Plays in the browser with keyboard or touch, with a story mode for easier play.",
+      tags: ["Browser game", "Keyboard & touch", "Accessibility options"] },
     { title: "Taleem Dost", kind: "University admissions guide", url: "https://taleemdost.syedasifhashmi.com/", img: "assets/work/taleemdost.webp",
       text: "Shows which Pakistani university programs your SSC and HSSC marks qualify for, with links to official requirements and scholarships. Free, no sign-up.",
       tags: ["Education", "Pakistan"] },
@@ -177,13 +186,7 @@ window.SITE = {
       tags: ["Geolocation", "Maps"] },
     { title: "PET Solutions", kind: "Business website", url: "https://petsolutions.syedasifhashmi.com/", img: "assets/work/petsolutions.webp",
       text: "A website for a PET preform and bottle manufacturer: product range, applications, FAQs and a product enquiry flow.",
-      tags: ["Business site", "Enquiries"] },
-    { title: "Diagram & Notes Digitizer", kind: "AI vision app", url: "https://syedasifhashmi.com/digital/", img: "assets/work/digitizer.webp", wide: true,
-      text: "Upload a photo of a diagram, flowchart, whiteboard or handwritten notes and get structured notes, tables, connections and clean Markdown to copy or download.",
-      tags: ["Vision AI", "Markdown", "PHP"] },
-    { title: "Dr. A-Team", kind: "Browser game · Space mission", url: "https://ateam.syedasifhashmi.com/", img: "assets/work/ateam.webp", wide: true,
-      text: "A space-opera action game: fly the ISV Vanguard, route power between systems, use your crew's abilities and get the Hespera colonists out alive. Plays in the browser with keyboard or touch, with a story mode for easier play.",
-      tags: ["Browser game", "Keyboard & touch", "Accessibility options"] }
+      tags: ["Business site", "Enquiries"] }
   ],
 
   skills: ["Healthcare management", "Health insurance", "Digital transformation", "Data analytics", "AI implementation", "Power BI", "Web development", "Team building", "Medical case management", "On-call facilitation of insured members", "Medical facilities", "Pre-authorization", "Medical claims", "ICD-10 coding", "Policy interpretation", "Turnaround-time analysis", "Excel", "BI dashboards", "Process automation", "Generative AI", "Team leadership", "Stakeholder coordination"]
