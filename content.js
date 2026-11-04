@@ -33,7 +33,7 @@ window.SITE = {
     { value: "24/7", label: "Medical approvals, every day" },
     { value: "02",   label: "Awards: 24/7 Center launch & Power BI Best Performer" },
     { value: "05",   label: "Medical officers trained and supervised", lit: true },
-    { value: "09",   label: "Web projects built and live" }
+    { value: "10",   label: "Web projects built and live" }
   ],
 
   aboutTitle: "From Clinical Insight to",
@@ -180,7 +180,10 @@ window.SITE = {
       tags: ["Business site", "Enquiries"] },
     { title: "Diagram & Notes Digitizer", kind: "AI vision app", url: "https://syedasifhashmi.com/digital/", img: "assets/work/digitizer.webp", wide: true,
       text: "Upload a photo of a diagram, flowchart, whiteboard or handwritten notes and get structured notes, tables, connections and clean Markdown to copy or download.",
-      tags: ["Vision AI", "Markdown", "PHP"] }
+      tags: ["Vision AI", "Markdown", "PHP"] },
+    { title: "Dr. A-Team", kind: "Browser game · Space mission", url: "https://ateam.syedasifhashmi.com/", img: "assets/work/ateam.webp", wide: true,
+      text: "A space-opera action game: fly the ISV Vanguard, route power between systems, use your crew's abilities and get the Hespera colonists out alive. Plays in the browser with keyboard or touch, with a story mode for easier play.",
+      tags: ["Browser game", "Keyboard & touch", "Accessibility options"] }
   ],
 
   skills: ["Healthcare management", "Health insurance", "Digital transformation", "Data analytics", "AI implementation", "Power BI", "Web development", "Team building", "Medical case management", "On-call facilitation of insured members", "Medical facilities", "Pre-authorization", "Medical claims", "ICD-10 coding", "Policy interpretation", "Turnaround-time analysis", "Excel", "BI dashboards", "Process automation", "Generative AI", "Team leadership", "Stakeholder coordination"]
