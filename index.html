@@ -111,6 +111,7 @@ h2,h3{text-wrap:balance}
 .socials a:hover{color:var(--fg);border-color:var(--fg-2)}
 .socials svg{width:17px;height:17px}
 .socials a.wa-link svg{color:var(--wa)}
+.socials a.tg-s svg,.reach a.tg-r svg:first-child{color:#229ED9}
 .hero-rule{border:0;border-top:1px solid var(--line);margin:0}
 @media (max-width:820px){
   .hero{min-height:0;justify-content:flex-start}
@@ -292,6 +293,33 @@ dialog.case[open]{animation:pop .3s ease}
 .wbody .pill{align-self:flex-start;margin-top:.4rem}
 @media (max-width:1000px){.work-grid{grid-template-columns:1fr 1fr}}
 @media (max-width:700px){.work-grid{grid-template-columns:1fr}.wcard.wide{grid-column:auto;flex-direction:column}.wcard.wide .shot{flex:none;border-right:0;border-bottom:1px solid var(--line)}.wcard.wide .wbody{padding:1.4rem 1.4rem 1.5rem}.wcard.wide .wbody h3{font-size:1.75rem}}
+.studio{position:relative;isolation:isolate;overflow:hidden;margin-top:1.2rem;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:2.5rem;align-items:center;padding:2.6rem clamp(1.4rem,4vw,3.2rem);border:1px solid var(--line-2);background:radial-gradient(520px 360px at 0% 100%,rgba(34,158,217,.30),transparent 70%),radial-gradient(520px 360px at 100% 0%,rgba(229,72,94,.22),transparent 70%),linear-gradient(150deg,#0B1222,#070A14)}
+.studio .copy-col{display:flex;flex-direction:column;gap:1rem;min-width:0}
+.studio .eyebrow{display:inline-flex;align-items:center;gap:.5rem;color:#5CC4F2}
+.studio .eyebrow .live{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px rgba(31,211,162,.18);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(31,211,162,0)}}
+.studio h3{font:400 clamp(2.1rem,3.6vw,3rem)/1.04 var(--f-serif);letter-spacing:-.02em}
+.studio h3 em{font-style:italic}
+.studio p{color:var(--fg-2);max-width:48ch}
+.agents{list-style:none;margin:.2rem 0;padding:0;display:flex;flex-wrap:wrap;gap:.45rem}
+.agents li{display:inline-flex;align-items:center;gap:.45rem;font-size:.8rem;font-weight:600;padding:.4rem .75rem;border:1px solid var(--line-2);border-radius:999px;background:rgba(9,13,23,.5)}
+.agents li b{font:700 .7rem/1 var(--f-sans);color:#5CC4F2}
+.tg-btn{align-self:flex-start;display:inline-flex;align-items:center;gap:.6rem;min-height:52px;padding:0 1.5rem;border-radius:999px;background:#229ED9;color:#fff;text-decoration:none;font:600 .95rem/1 var(--f-sans);box-shadow:0 14px 34px -14px rgba(34,158,217,.8);transition:transform .2s,box-shadow .2s}
+.tg-btn svg{width:20px;height:20px}
+.tg-btn:hover{transform:translateY(-2px);box-shadow:0 18px 40px -14px rgba(34,158,217,.95)}
+.studio .how{font-size:.88rem;color:var(--mute)}
+.studio code{font:500 .86rem/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:#93C5FD;background:rgba(147,197,253,.08);padding:.15rem .45rem;border-radius:6px}
+.chat{min-width:0;border:1px solid var(--line-2);border-radius:18px;background:#0E1621;padding:1rem;display:flex;flex-direction:column;gap:.55rem;box-shadow:0 30px 60px -30px #000}
+.chat .ch{display:flex;align-items:center;gap:.6rem;padding-bottom:.7rem;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:.2rem}
+.chat .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#229ED9,#E5485E);font-size:1rem}
+.chat .ch b{display:block;font-size:.9rem}
+.chat .ch small{display:block;font-size:.72rem;color:#5CC4F2}
+.msg-b{max-width:88%;padding:.55rem .75rem;border-radius:12px;font-size:.8rem;line-height:1.45;color:#E7EEF7}
+.msg-b.me{align-self:flex-end;background:#2B5278;border-bottom-right-radius:4px}
+.msg-b.bot{align-self:flex-start;background:#182533;border-bottom-left-radius:4px}
+.msg-b .ok{color:var(--teal)}
+.msg-b .tm{display:block;text-align:right;font-size:.62rem;color:rgba(231,238,247,.45);margin-top:.2rem}
+@media (max-width:900px){.studio{grid-template-columns:1fr;gap:2rem}}
 .marquee{overflow:hidden;border-block:1px solid var(--line);margin-top:4.5rem;padding-block:1.4rem;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
 .track{display:flex;width:max-content;gap:2.4rem;animation:slide 48s linear infinite}
 .track span{font:700 clamp(1.8rem,3.4vw,2.8rem)/1 var(--f-cond);text-transform:uppercase;white-space:nowrap;display:inline-flex;align-items:center;gap:2.4rem}
@@ -356,6 +384,7 @@ footer .tag{font:400 italic 1.1rem var(--f-serif);color:var(--fg-2)}
     <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></symbol>
     <symbol id="i-in" viewBox="0 0 24 24"><path fill="currentColor" d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.75h4v11H3zm6.5 0h3.8v1.5h.06c.53-.95 1.82-1.95 3.75-1.95 4 0 4.74 2.5 4.74 5.75v5.7h-4v-5.05c0-1.2-.02-2.75-1.7-2.75-1.7 0-1.95 1.3-1.95 2.66v5.14h-4z"></path></symbol>
     <symbol id="i-mail" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3.5 6.5l8.5 6 8.5-6"></path></g></symbol>
+    <symbol id="i-tg" viewBox="0 0 24 24"><path fill="currentColor" d="M21.9 4.3c.2-.9-.7-1.6-1.5-1.3L2.8 9.8c-.9.4-.9 1.6 0 1.9l4.4 1.4 1.7 5.4c.2.7 1.1.9 1.6.4l2.5-2.3 4.6 3.4c.6.5 1.6.1 1.7-.7zM9.6 13.9l8.1-6.4-6.6 7.5-.3 3-1.2-4.1z"></path></symbol>
     <symbol id="i-wa" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 1.8a8.2 8.2 0 1 1-4.2 15.3l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 0 1 12 3.8zM8.6 7c-.2 0-.6.1-.9.4-.3.3-1.1 1.1-1.1 2.7s1.2 3.2 1.3 3.4c.2.2 2.3 3.6 5.7 4.9 2.8 1.1 3.4.9 4 .8.6-.1 2-.8 2.2-1.6.3-.8.3-1.5.2-1.6l-.6-.4-2-1c-.3-.1-.5-.1-.7.2l-.9 1.2c-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.6.3-.5v-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6z"></path></symbol>
   </defs>
 </svg>
@@ -385,6 +414,7 @@ footer .tag{font:400 italic 1.1rem var(--f-serif);color:var(--fg-2)}
   <div class="wrap menu-foot">
     <a class="pill" href="https://www.linkedin.com/in/dr-asifhashmi" target="_blank" rel="noopener" data-li="">LinkedIn <svg><use href="#i-arr"></use></svg></a>
     <a class="pill wa-link" href="#contact" target="_blank" rel="noopener">WhatsApp <svg><use href="#i-arr"></use></svg></a>
+    <a class="pill" href="https://t.me/Smvodoobot" target="_blank" rel="noopener" data-tg="">Telegram AI bot <svg><use href="#i-arr"></use></svg></a>
   </div>
 </div>
 
@@ -410,6 +440,7 @@ footer .tag{font:400 italic 1.1rem var(--f-serif);color:var(--fg-2)}
         <div class="socials">
           <a href="https://www.linkedin.com/in/dr-asifhashmi" target="_blank" rel="noopener" aria-label="LinkedIn" data-li=""><svg><use href="#i-in"></use></svg></a>
           <a href="#contact" class="wa-link" target="_blank" rel="noopener" aria-label="Chat on WhatsApp"><svg><use href="#i-wa"></use></svg></a>
+          <a href="https://t.me/Smvodoobot" target="_blank" rel="noopener" aria-label="Try my AI bot on Telegram" data-tg="" class="tg-s"><svg><use href="#i-tg"></use></svg></a>
           <a href="#contact" aria-label="Email"><svg><use href="#i-mail"></use></svg></a>
         </div>
       </div>
@@ -574,6 +605,25 @@ footer .tag{font:400 italic 1.1rem var(--f-serif);color:var(--fg-2)}
         <p>Web tools and sites I've designed and published. Every one is live: open it and try it.</p>
       </div>
       <div class="work-grid" id="workGrid"><article class="wcard reveal wide"><a class="shot" href="https://cmis.syedasifhashmi.com/" target="_blank" rel="noopener" aria-label="Open EFU Medical Services CMIS (opens in a new tab)"><span class="bar"><i></i><i></i><i></i><span>cmis.syedasifhashmi.com</span></span><span class="frame"><img src="assets/work/cmis.webp" alt="Screenshot of EFU Medical Services CMIS" width="720" height="450" loading="lazy"></span></a><div class="wbody"><span class="eyebrow">Case management system · Beta</span><h3>EFU Medical Services CMIS</h3><p>A case management system for medical services: case intake, daily follow-ups, hospitals and CSOs, region-based access for doctors and managers, and a dashboard for TAT compliance. Runs on invented demo patient data.</p><div class="wtags"><span>Case management</span><span>Dashboards</span><span>Role-based access</span></div><a class="pill" href="https://cmis.syedasifhashmi.com/" target="_blank" rel="noopener">Visit site <svg><use href="#i-arr"></use></svg></a></div></article><article class="wcard reveal"><a class="shot" href="https://bijlismart.syedasifhashmi.com/" target="_blank" rel="noopener" aria-label="Open BijliSmart (opens in a new tab)"><span class="bar"><i></i><i></i><i></i><span>bijlismart.syedasifhashmi.com</span></span><span class="frame"><img src="assets/work/bijlismart.webp" alt="Screenshot of BijliSmart" width="720" height="450" loading="lazy"></span></a><div class="wbody"><span class="eyebrow">Electricity bill estimator</span><h3>BijliSmart</h3><p>Estimate electricity use and bills in Pakistan from your appliances or meter readings, see how tariff slabs change the bill, and plan savings, in English or Urdu.</p><div class="wtags"><span>Calculator</span><span>English &amp; Urdu</span></div><a class="pill" href="https://bijlismart.syedasifhashmi.com/" target="_blank" rel="noopener">Visit site <svg><use href="#i-arr"></use></svg></a></div></article><article class="wcard reveal"><a class="shot" href="https://raftar.syedasifhashmi.com/" target="_blank" rel="noopener" aria-label="Open Raftaar (opens in a new tab)"><span class="bar"><i></i><i></i><i></i><span>raftar.syedasifhashmi.com</span></span><span class="frame"><img src="assets/work/raftaar.webp" alt="Screenshot of Raftaar" width="720" height="450" loading="lazy"></span></a><div class="wbody"><span class="eyebrow">Internet speed test</span><h3>Raftaar</h3><p>Measure ping, jitter, download and upload speed in about 25 seconds, right in the browser, with a history of past tests. No app needed.</p><div class="wtags"><span>Web app</span><span>Networking</span></div><a class="pill" href="https://raftar.syedasifhashmi.com/" target="_blank" rel="noopener">Visit site <svg><use href="#i-arr"></use></svg></a></div></article><article class="wcard reveal"><a class="shot" href="https://icd10.syedasifhashmi.com/" target="_blank" rel="noopener" aria-label="Open ICD-10 Code Finder (opens in a new tab)"><span class="bar"><i></i><i></i><i></i><span>icd10.syedasifhashmi.com</span></span><span class="frame"><img src="assets/work/icd10.webp" alt="Screenshot of ICD-10 Code Finder" width="720" height="450" loading="lazy"></span></a><div class="wbody"><span class="eyebrow">Medical coding tool</span><h3>ICD-10 Code Finder</h3><p>Search 74,879 billable FY2027 ICD-10-CM diagnosis codes and ICD-10-PCS procedure codes by code or keyword, built from the official CMS code files. Tap a code to copy it.</p><div class="wtags"><span>ICD-10-CM</span><span>ICD-10-PCS</span><span>Medical coding</span></div><a class="pill" href="https://icd10.syedasifhashmi.com/" target="_blank" rel="noopener">Visit site <svg><use href="#i-arr"></use></svg></a></div></article><article class="wcard reveal"><a class="shot" href="https://taleemdost.syedasifhashmi.com/" target="_blank" rel="noopener" aria-label="Open Taleem Dost (opens in a new tab)"><span class="bar"><i></i><i></i><i></i><span>taleemdost.syedasifhashmi.com</span></span><span class="frame"><img src="assets/work/taleemdost.webp" alt="Screenshot of Taleem Dost" width="720" height="450" loading="lazy"></span></a><div class="wbody"><span class="eyebrow">University admissions guide</span><h3>Taleem Dost</h3><p>Shows which Pakistani university programs your SSC and HSSC marks qualify for, with links to official requirements and scholarships. Free, no sign-up.</p><div class="wtags"><span>Education</span><span>Pakistan</span></div><a class="pill" href="https://taleemdost.syedasifhashmi.com/" target="_blank" rel="noopener">Visit site <svg><use href="#i-arr"></use></svg></a></div></article><article class="wcard reveal"><a class="shot" href="https://carenearby.lovable.app/" target="_blank" rel="noopener" aria-label="Open Care Nearby (opens in a new tab)"><span class="bar"><i></i><i></i><i></i><span>carenearby.lovable.app</span></span><span class="frame"><img src="assets/work/carenearby.webp" alt="Screenshot of Care Nearby" width="720" height="450" loading="lazy"></span></a><div class="wbody"><span class="eyebrow">Healthcare navigation</span><h3>Care Nearby</h3><p>Find nearby hospitals, pharmacies and clinics with directions, phone numbers and opening hours, using your location only to search. Free sign-in.</p><div class="wtags"><span>Geolocation</span><span>Maps</span></div><a class="pill" href="https://carenearby.lovable.app/" target="_blank" rel="noopener">Visit site <svg><use href="#i-arr"></use></svg></a></div></article><article class="wcard reveal"><a class="shot" href="https://petsolutions.syedasifhashmi.com/" target="_blank" rel="noopener" aria-label="Open PET Solutions (opens in a new tab)"><span class="bar"><i></i><i></i><i></i><span>petsolutions.syedasifhashmi.com</span></span><span class="frame"><img src="assets/work/petsolutions.webp" alt="Screenshot of PET Solutions" width="720" height="450" loading="lazy"></span></a><div class="wbody"><span class="eyebrow">Business website</span><h3>PET Solutions</h3><p>A website for a PET preform and bottle manufacturer: product range, applications, FAQs and a product enquiry flow.</p><div class="wtags"><span>Business site</span><span>Enquiries</span></div><a class="pill" href="https://petsolutions.syedasifhashmi.com/" target="_blank" rel="noopener">Visit site <svg><use href="#i-arr"></use></svg></a></div></article></div>
+      <div class="studio reveal" id="studio" aria-labelledby="stTitle">
+        <div class="copy-col">
+          <span class="eyebrow"><span class="live" aria-hidden="true"></span>Telegram bot · Live</span>
+          <h3 id="stTitle">Try my AI <em>Content Studio</em></h3>
+          <p>Five AI agents work as a team to turn any topic into a LinkedIn post, Instagram caption, reel script and image. A critic agent scores every draft and sends weak ones back for a rewrite.</p>
+          <ol class="agents" aria-label="The five agents">
+            <li><b>1</b>Researcher</li><li><b>2</b>Strategist</li><li><b>3</b>Writer</li><li><b>4</b>Designer</li><li><b>5</b>Critic</li>
+          </ol>
+          <a class="tg-btn" href="https://t.me/Smvodoobot" target="_blank" rel="noopener" data-tg=""><svg aria-hidden="true"><use href="#i-tg"></use></svg>Chat with my AI on Telegram</a>
+          <p class="how">Tap <b>Start</b>, then send <code>/create AI in healthcare</code>. For Roman Urdu, send <code>/create urdu</code> and your topic.</p>
+        </div>
+        <div class="chat" aria-hidden="true">
+          <div class="ch"><span class="av">🎬</span><span><b>Content Studio</b><small>bot</small></span></div>
+          <div class="msg-b me">/create AI in healthcare<span class="tm">21:40</span></div>
+          <div class="msg-b bot">🎬 Content Studio started on: AI in healthcare<br>🔍 Research Agent is reading today's news…</div>
+          <div class="msg-b bot"><span class="ok">✓</span> Researcher: facts gathered<br><span class="ok">✓</span> Strategist: angle and hook chosen<br><span class="ok">✓</span> Writer: first draft ready<br>🧐 Critic is reviewing the draft…</div>
+          <div class="msg-b bot">🏁 Content package ready<br>Critic score: 9/10<span class="tm">21:41</span></div>
+        </div>
+      </div>
     </div>
     <div class="marquee" aria-label="Skills"><div class="track" id="track"><span>Healthcare management</span><span>Health insurance</span><span>Digital transformation</span><span>Data analytics</span><span>AI implementation</span><span>Power BI</span><span>Web development</span><span>Team building</span><span>Medical case management</span><span>On-call facilitation of insured members</span><span>Medical facilities</span><span>Pre-authorization</span><span>Medical claims</span><span>ICD-10 coding</span><span>Policy interpretation</span><span>Turnaround-time analysis</span><span>Excel</span><span>BI dashboards</span><span>Process automation</span><span>Generative AI</span><span>Team leadership</span><span>Stakeholder coordination</span><span aria-hidden="true">Healthcare management</span><span aria-hidden="true">Health insurance</span><span aria-hidden="true">Digital transformation</span><span aria-hidden="true">Data analytics</span><span aria-hidden="true">AI implementation</span><span aria-hidden="true">Power BI</span><span aria-hidden="true">Web development</span><span aria-hidden="true">Team building</span><span aria-hidden="true">Medical case management</span><span aria-hidden="true">On-call facilitation of insured members</span><span aria-hidden="true">Medical facilities</span><span aria-hidden="true">Pre-authorization</span><span aria-hidden="true">Medical claims</span><span aria-hidden="true">ICD-10 coding</span><span aria-hidden="true">Policy interpretation</span><span aria-hidden="true">Turnaround-time analysis</span><span aria-hidden="true">Excel</span><span aria-hidden="true">BI dashboards</span><span aria-hidden="true">Process automation</span><span aria-hidden="true">Generative AI</span><span aria-hidden="true">Team leadership</span><span aria-hidden="true">Stakeholder coordination</span></div></div>
   </section>
@@ -586,6 +636,7 @@ footer .tag{font:400 italic 1.1rem var(--f-serif);color:var(--fg-2)}
         <div class="reach">
           <a href="https://www.linkedin.com/in/dr-asifhashmi" target="_blank" rel="noopener" data-li=""><svg><use href="#i-in"></use></svg><span class="t"><small>LinkedIn</small><b>in/dr-asifhashmi</b></span><svg class="go"><use href="#i-arr"></use></svg></a>
           <a href="#contact" class="wa-link" target="_blank" rel="noopener"><svg><use href="#i-wa"></use></svg><span class="t"><small>WhatsApp</small><b style="user-select:none">Chat with me directly</b></span><svg class="go"><use href="#i-arr"></use></svg></a>
+          <a href="https://t.me/Smvodoobot" target="_blank" rel="noopener" data-tg="" class="tg-r"><svg><use href="#i-tg"></use></svg><span class="t"><small>Telegram</small><b>Try my AI Content Studio</b></span><svg class="go"><use href="#i-arr"></use></svg></a>
           <div class="r"><svg><use href="#i-mail"></use></svg><span class="t"><small>Email</small><b id="emailText" style="user-select:all">contact@syedasifhashmi.com</b></span><button class="copy" type="button" id="copyEmail">Copy</button></div>
         </div>
       </div>
@@ -633,7 +684,7 @@ footer .tag{font:400 italic 1.1rem var(--f-serif);color:var(--fg-2)}
   </div>
 </dialog>
 
-<script src="content.js?v=20261031"></script>
+<script src="content.js?v=20261104"></script>
 <script>
 (function(){
   document.documentElement.classList.add('js');
@@ -650,6 +701,7 @@ footer .tag{font:400 italic 1.1rem var(--f-serif);color:var(--fg-2)}
   if(S.heroRight){ set('#hr1',S.heroRight[0]); set('#hr2',S.heroRight[1]); }
   set('#heroLine',S.heroLine); set('#heroLineI',S.heroLineItalic); set('#heroText',S.heroText);
   if(S.linkedin) $$('[data-li]').forEach(a=>a.href=S.linkedin);
+  if(S.telegram) $$('[data-tg]').forEach(a=>a.href=S.telegram);
   set('#emailText',S.email); $('#yr').textContent=new Date().getFullYear();
 
   $('#stairs').innerHTML=(S.stats||[]).slice(0,5).map((s,i)=>{

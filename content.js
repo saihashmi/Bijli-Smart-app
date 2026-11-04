@@ -13,6 +13,7 @@ window.SITE = {
   portraitStudio: "assets/cutout-studio.webp",
   email: "contact@syedasifhashmi.com", // ← change to your real inbox
   linkedin: "https://www.linkedin.com/in/dr-asifhashmi",
+  telegram: "https://t.me/Smvodoobot", // AI Content Studio bot (button, hero icon, contact row)
   // WhatsApp number is stored encoded so it never shows on the page.
   // To change it: encode the number (digits only, e.g. 923001234567) at base64encode.org and paste here.
   whatsapp: "OTIzMzMyMTU0NjUx",
