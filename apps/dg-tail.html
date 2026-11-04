@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagram &amp; Notes Digitizer | Dr. Syed Asif Hashmi</title>
+<meta name="description" content="Upload a photo of a technical diagram, flowchart or notes and get structured, editable notes and Markdown.">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Antonio:wght@600;700&family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink-bg:#04060C; --paper:#090D17; --ink-3:#0F1422;
+  --ink:#F2F4F8; --ink-soft:#A5ADBE; --dim:#7D8598;
+  --line:rgba(190,205,235,.16); --line-2:rgba(190,205,235,.26); --card:rgba(15,20,34,.74);
+  --blue:#2EB8F0; --blue-dark:#2EB8F0; --blue-soft:rgba(46,184,240,.10); --cyan:#E5485E; --red:#E5485E; --teal:#1FD3A2;
+  --ok:#1FD3A2; --err:#FFB3BF; --err-bg:rgba(240,100,122,.10); --radius:4px;
+  --duo:linear-gradient(115deg,#2EB8F0,#E5485E);
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"Instrument Serif",Georgia,serif; --cond:"Antonio","Arial Narrow",Impact,sans-serif;
+  --shadow:0 30px 60px -40px #000; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;color:var(--ink);font:16px/1.6 var(--sans);background:var(--ink-bg);min-height:100vh;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.022) 0 1px,transparent 1px 18px),
+  radial-gradient(700px 520px at 6% 0%,rgba(46,140,240,.28),transparent 70%),
+  radial-gradient(640px 520px at 100% 26%,rgba(229,72,94,.20),transparent 70%),
+  radial-gradient(700px 500px at 40% 110%,rgba(46,120,240,.16),transparent 70%)}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+
+.sitebar{position:sticky;top:0;z-index:20;background:rgba(4,6,12,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.sb-in{max-width:1040px;margin:0 auto;padding:0 20px;height:68px;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.sb-brand{display:flex;align-items:center;gap:.6rem;text-decoration:none}
+.sb-brand img{width:34px;height:auto}
+.sb-brand span{font:400 1.3rem/1 var(--serif)}
+.sb-nav{display:flex;align-items:center;gap:.4rem}
+.sb-nav a{text-decoration:none;font-size:.86rem;font-weight:600;color:var(--ink-soft);padding:.5rem .7rem;border-radius:999px}
+.sb-nav a:hover{color:var(--ink)}
+.sb-nav .sb-pill{position:relative;color:var(--ink);padding:.55rem 1rem;isolation:isolate;letter-spacing:.04em;text-transform:uppercase;font-size:.74rem}
+.sb-pill::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;background:var(--duo);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;z-index:-1}
+@media (max-width:560px){.sb-nav a:not(.sb-pill){display:none}}
+
+.wrap{max-width:1040px;margin:0 auto;padding:3.2rem 20px 4rem}
+header.top{display:flex;flex-direction:column;gap:.9rem;margin-bottom:2.4rem;max-width:760px}
+.kicker{display:inline-flex;align-items:center;gap:.55rem;font:600 .72rem/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--blue)}
+.kicker::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px rgba(31,211,162,.18)}
+h1{margin:0;font:400 clamp(2.4rem,5.6vw,4.4rem)/1.02 var(--serif);letter-spacing:-.02em}
+h1 em{font-style:italic}
+.sub{margin:0;color:var(--ink-soft);font-size:1.05rem;max-width:60ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+
+.drop{position:relative;padding:56px 20px;text-align:center;cursor:pointer;border:1px dashed var(--line-2);transition:background .2s,border-color .2s,transform .2s;outline:none;overflow:hidden}
+.drop::after{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--duo)}
+.drop:hover,.drop:focus-visible{background:rgba(46,184,240,.07);border-color:var(--blue)}
+.drop.drag{background:rgba(46,184,240,.12);border-color:var(--blue);transform:scale(1.01)}
+.drop .ico{width:64px;height:64px;margin:0 auto 14px;color:var(--blue);padding:14px;border:1px solid var(--line-2);border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(46,184,240,.25),transparent 70%)}
+.drop strong{display:block;font:400 1.6rem/1.2 var(--serif);margin-bottom:.3rem}
+.drop span{color:var(--dim);font-size:.85rem;letter-spacing:.06em}
+.drop .corner{position:absolute;width:16px;height:16px;border:2px solid var(--blue);opacity:.7}
+.corner.tl{top:12px;left:12px;border-right:0;border-bottom:0}
+.corner.tr{top:12px;right:12px;border-left:0;border-bottom:0;border-color:var(--red)}
+.corner.bl{bottom:12px;left:12px;border-right:0;border-top:0}
+.corner.br{bottom:12px;right:12px;border-left:0;border-top:0;border-color:var(--red)}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+.preview{display:none;padding:18px;gap:18px;align-items:center}
+.preview.show{display:flex}
+.thumb{width:140px;height:100px;flex:none;overflow:hidden;border:1px solid var(--line);background:var(--paper)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.file-meta{flex:1;min-width:0}
+.file-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono);font-size:.9rem}
+.file-size{color:var(--dim);font-size:.85rem}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+
+.btn{appearance:none;border:1px solid transparent;border-radius:999px;padding:12px 22px;font:600 .8rem var(--sans);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .2s,filter .2s,background .2s;min-height:46px;color:var(--ink)}
+.btn:hover:not(:disabled){transform:translateY(-2px)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn-primary{color:#fff;background:linear-gradient(115deg,rgba(46,184,240,.9),rgba(229,72,94,.9));box-shadow:-10px 8px 28px -12px rgba(46,150,240,.6),10px 8px 28px -12px rgba(229,72,94,.55)}
+.btn-primary:hover:not(:disabled){filter:brightness(1.08)}
+.btn-ghost{background:transparent;border-color:var(--line-2)}
+.btn-ghost:hover:not(:disabled){background:var(--blue-soft);border-color:var(--blue)}
+
+.alert{display:none;margin-top:16px;padding:12px 14px;background:var(--err-bg);color:var(--err);border:1px solid rgba(240,100,122,.35);font-size:.95rem}
+.alert.show{display:flex;gap:10px;align-items:flex-start}
+
+.progress{display:none;margin-top:20px;padding:22px}
+.progress.show{display:block}
+.progress h2{margin:0 0 16px;font:700 1.3rem/1 var(--cond);text-transform:uppercase;letter-spacing:.01em}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.steps li{display:flex;align-items:center;gap:12px;color:var(--dim);font-size:.95rem}
+.dot{width:28px;height:28px;flex:none;border-radius:50%;border:2px solid var(--line-2);display:grid;place-items:center;font:600 .75rem var(--mono);background:var(--paper)}
+.steps li.active{color:var(--ink);font-weight:600}
+.steps li.active .dot{border-color:var(--blue);border-top-color:transparent;animation:spin .8s linear infinite}
+.steps li.active .dot span{display:none}
+.steps li.done{color:var(--ink-soft)}
+.steps li.done .dot{background:var(--teal);border-color:var(--teal);color:#04060C}
+.bar{height:4px;margin-top:18px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--duo);transition:width .5s}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.results{display:none;margin-top:32px}
+.results.show{display:block}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.tab{appearance:none;background:none;border:0;border-bottom:2px solid transparent;padding:12px 18px;font:600 .78rem var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--dim);cursor:pointer;margin-bottom:-1px}
+.tab[aria-selected=true]{color:var(--ink);border-image:var(--duo) 1;border-bottom-width:2px;border-bottom-style:solid}
+.panel[hidden]{display:none}
+.panel{display:grid;gap:16px}
+
+.overview{position:relative;padding:24px 24px;border-left:0;overflow:hidden;
+  background:radial-gradient(420px 220px at 100% 0%,rgba(229,72,94,.22),transparent 70%),radial-gradient(420px 260px at 0% 100%,rgba(46,140,240,.24),transparent 70%),var(--paper)}
+.overview::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--duo)}
+.ov-kicker{font:600 .72rem var(--sans);text-transform:uppercase;letter-spacing:.22em;color:var(--blue)}
+.overview h2{margin:6px 0 16px;font:400 clamp(1.6rem,3.4vw,2.2rem)/1.15 var(--serif);overflow-wrap:anywhere}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin:0;background:var(--line);border:1px solid var(--line)}
+.stats div{background:var(--ink-bg);padding:12px 14px}
+.stats dt{font-size:.76rem;color:var(--dim)}
+.stats dd{margin:0;font:700 1.8rem/1.1 var(--cond)}
+
+.result-section{padding:20px 22px}
+.result-section h3{margin:0 0 14px;font:400 1.4rem/1.2 var(--serif);display:flex;align-items:center;gap:12px}
+.result-section h4{margin:16px 0 8px;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+.sec-icon{width:32px;height:32px;border-radius:50%;border:1px solid var(--line-2);background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font:600 .9rem var(--sans)}
+.badge{margin-left:auto;font:600 .72rem var(--sans);letter-spacing:.08em;padding:3px 10px;border-radius:20px;border:1px solid rgba(46,184,240,.4);color:var(--blue)}
+.empty{margin:0;color:var(--dim);font-style:italic}
+pre.extracted{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:.88rem/1.65 var(--mono);color:#CDD6E8;background:rgba(4,6,12,.6);border:1px solid var(--line);padding:14px;max-height:420px;overflow:auto}
+.table-wrap{overflow-x:auto;border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+th{background:rgba(46,184,240,.08);font-weight:600;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td code{font:.82rem var(--mono);background:rgba(4,6,12,.6);padding:1px 6px;border:1px solid var(--line)}
+.tag{display:inline-block;font:.76rem var(--mono);padding:2px 8px;border-radius:999px;border:1px solid rgba(46,184,240,.45);color:var(--blue);white-space:nowrap}
+
+.rels{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.rel{display:grid;grid-template-columns:minmax(0,1fr) minmax(90px,1.2fr) minmax(0,1fr);align-items:center;gap:8px}
+.node{padding:9px 12px;border:1px solid var(--line-2);background:var(--paper);font-size:.9rem;font-weight:600;text-align:center;overflow-wrap:anywhere}
+.arrow{position:relative;height:28px;display:flex;align-items:center;justify-content:center}
+.arrow::before{content:"";position:absolute;left:0;right:8px;top:50%;border-top:1px dashed var(--blue)}
+.arrow::after{content:"";position:absolute;right:0;top:50%;transform:translateY(-50%);border:6px solid transparent;border-left:9px solid var(--red);border-right:0}
+.arrow-label{position:relative;background:var(--ink-3);padding:0 8px;font:.74rem var(--mono);color:var(--ink-soft);max-width:90%;text-align:center;line-height:1.3}
+
+.workflow{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.workflow li{display:flex;gap:14px;align-items:flex-start}
+.step-no{width:34px;height:34px;flex:none;border-radius:50%;background:var(--duo);color:#fff;display:grid;place-items:center;font:700 .95rem var(--cond)}
+.workflow p{margin:2px 0 0;color:var(--ink-soft);font-size:.92rem}
+
+.md-wrap{padding:18px}
+.md-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.md-bar span{color:var(--dim);font-size:.86rem}
+textarea{width:100%;min-height:460px;resize:vertical;padding:14px;border:1px solid var(--line);background:rgba(4,6,12,.6);color:#CDD6E8;font:.86rem/1.6 var(--mono)}
+textarea:focus{outline:2px solid var(--blue);outline-offset:1px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--ink-bg);padding:10px 18px;border-radius:999px;font-size:.88rem;font-weight:600;transition:.2s;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+footer.appfoot{margin-top:3rem;padding-top:1.6rem;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;justify-content:space-between;gap:.8rem 2rem;color:var(--dim);font-size:.84rem}
+footer.appfoot a{color:var(--ink-soft);text-decoration:none;font-weight:600}
+footer.appfoot a:hover{color:var(--ink)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (max-width:640px){
+  .wrap{padding-top:2.2rem}
+  .drop{padding:40px 14px}
+  .preview.show{flex-direction:column;align-items:stretch}
+  .thumb{width:100%;height:180px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .rel{grid-template-columns:1fr;gap:4px}
+  .arrow{height:30px;transform:none}
+  .arrow::before{left:50%;right:auto;top:0;bottom:8px;border-top:0;border-left:1px dashed var(--blue)}
+  .arrow::after{left:50%;right:auto;top:auto;bottom:0;transform:translateX(-50%);border:6px solid transparent;border-top:9px solid var(--red);border-bottom:0}
+  .arrow-label{margin-left:40px}
+  .btn{flex:1;justify-content:center}
+}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="sitebar">
+  <div class="sb-in">
+    <a class="sb-brand" href="/" aria-label="Dr. Syed Asif Hashmi, portfolio home"><img src="/assets/logo-mark.png" alt="" width="34" height="26"><span>Asif Hashmi</span></a>
+    <nav class="sb-nav" aria-label="Site">
+      <a href="/#work">Live work</a>
+      <a href="/#contact">Contact</a>
+      <a class="sb-pill" href="/">← Portfolio</a>
+    </nav>
+  </div>
+</header>
+<div class="wrap">
+  <header class="top">
+    <span class="kicker">AI vision · Notes digitizer</span>
+    <h1>Diagram &amp; Notes <em>Digitizer</em></h1>
+    <p class="sub">Turn photos of diagrams, flowcharts, whiteboards and handwritten notes into structured notes and clean Markdown.</p>
+  </header>
+
+  <form id="form" novalidate>
+    <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+
+    <div id="drop" class="drop card" role="button" tabindex="0" aria-describedby="drop-hint">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <svg class="ico" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="6" y="8" width="36" height="30" rx="4"/><path d="M6 30l10-9 8 7 6-5 12 10"/><circle cx="33" cy="17" r="3"/>
+      </svg>
+      <strong>Drop an image here, or click to browse</strong>
+      <span id="drop-hint">JPG, PNG or WEBP · up to 6 MB</span>
+      <input id="file" type="file" name="image" accept="image/jpeg,image/png,image/webp">
+    </div>
+
+    <div id="preview" class="preview card" aria-live="polite">
+      <div class="thumb"><img id="thumb" alt="Preview of the selected image"></div>
+      <div class="file-meta">
+        <div id="fname" class="file-name"></div>
+        <div id="fsize" class="file-size"></div>
+        <div class="actions">
+          <button id="go" type="submit" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h12M12 6l6 6-6 6"/></svg>
+            Digitize
+          </button>
+          <button id="remove" type="button" class="btn btn-ghost">Remove</button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div id="alert" class="alert" role="alert">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 17h.01"/></svg>
+    <span id="alert-msg"></span>
+  </div>
+
+  <section id="progress" class="progress card" aria-live="polite">
+    <h2>Digitizing your image…</h2>
+    <ol class="steps" id="steps">
+      <li><span class="dot"><span>1</span></span>Uploading image</li>
+      <li><span class="dot"><span>2</span></span>Reading text and shapes</li>
+      <li><span class="dot"><span>3</span></span>Mapping connections</li>
+      <li><span class="dot"><span>4</span></span>Building notes</li>
+    </ol>
+    <div class="bar"><i id="bar"></i></div>
+  </section>
+
+  <section id="results" class="results" aria-label="Results">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-s" aria-controls="panel-s" aria-selected="true">Structured</button>
+      <button class="tab" role="tab" id="tab-m" aria-controls="panel-m" aria-selected="false" tabindex="-1">Markdown</button>
+    </div>
+    <div id="panel-s" class="panel" role="tabpanel" aria-labelledby="tab-s"></div>
+    <div id="panel-m" class="panel" role="tabpanel" aria-labelledby="tab-m" hidden>
+      <div class="card md-wrap">
+        <div class="md-bar">
+          <span>Read-only Markdown — paste into any notes app, wiki or README.</span>
+          <div class="actions" style="margin:0">
+            <button id="dl" type="button" class="btn btn-ghost">Download .md</button>
+            <button id="copy" type="button" class="btn btn-primary">Copy</button>
+          </div>
+        </div>
+        <label for="md" class="sr-only">Markdown output</label>
+        <textarea id="md" readonly spellcheck="false"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <footer class="appfoot">
+    <span>Results are generated by AI from the image. Always check important details against the original.</span>
+    <span>Built by <a href="/">Dr. Syed Asif Hashmi</a></span>
+  </footer>
+</div>
+
+<div id="toast" class="toast" role="status"></div>
+
+<script>
+(() => {
+  'use strict';
+  const MAX = <?= (int) MAX_UPLOAD_BYTES ?>;
+  const TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+  const $ = (id) => document.getElementById(id);
+  const form = $('form'), drop = $('drop'), input = $('file'), preview = $('preview');
+  const thumb = $('thumb'), fname = $('fname'), fsize = $('fsize');
+  const go = $('go'), remove = $('remove'), alertBox = $('alert'), alertMsg = $('alert-msg');
+  const progress = $('progress'), steps = Array.from($('steps').children), bar = $('bar');
+  const results = $('results'), panelS = $('panel-s'), md = $('md');
+  const tabS = $('tab-s'), tabM = $('tab-m'), toast = $('toast');
+
+  let file = null, objectUrl = null, timers = [], busy = false, mdName = 'notes';
+
+  const fmtSize = (b) => b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(1) + ' KB' : (b / 1048576).toFixed(2) + ' MB';
+
+  function showError(msg) { alertMsg.textContent = msg; alertBox.classList.add('show'); }
+  function clearError() { alertBox.classList.remove('show'); alertMsg.textContent = ''; }
+
+  function showToast(msg) {
+    toast.textContent = msg; toast.classList.add('show');
+    clearTimeout(showToast.t); showToast.t = setTimeout(() => toast.classList.remove('show'), 2000);
+  }
+
+  function setFile(f) {
+    clearError();
+    if (!f) return;
+    if (!TYPES.includes(f.type)) { showError('Only JPG, PNG and WEBP images are supported.'); input.value = ''; return; }
+    if (f.size > MAX) { showError('That image is ' + fmtSize(f.size) + '. The maximum size is 6 MB.'); input.value = ''; return; }
+    if (f.size === 0) { showError('That file is empty. Please choose another image.'); input.value = ''; return; }
+    file = f;
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl = URL.createObjectURL(f);
+    thumb.src = objectUrl;
+    fname.textContent = f.name;
+    fname.title = f.name;
+    fsize.textContent = fmtSize(f.size) + ' · ' + f.type.replace('image/', '').toUpperCase();
+    drop.style.display = 'none';
+    preview.classList.add('show');
+    go.focus();
+  }
+
+  function resetFile() {
+    file = null; input.value = '';
+    if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+    thumb.removeAttribute('src');
+    preview.classList.remove('show');
+    drop.style.display = '';
+    clearError();
+    drop.focus();
+  }
+
+  // Drop zone: click, keyboard, drag and drop
+  drop.addEventListener('click', () => { if (!busy) input.click(); });
+  drop.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
+  input.addEventListener('change', () => setFile(input.files && input.files[0]));
+  ['dragenter', 'dragover'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('drag'); }));
+  ['dragleave', 'dragend'].forEach((ev) => drop.addEventListener(ev, () => drop.classList.remove('drag')));
+  drop.addEventListener('drop', (e) => {
+    e.preventDefault(); drop.classList.remove('drag');
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) setFile(f);
+  });
+  // Stop the browser opening files dropped outside the zone
+  window.addEventListener('dragover', (e) => e.preventDefault());
+  window.addEventListener('drop', (e) => e.preventDefault());
+
+  remove.addEventListener('click', resetFile);
+
+  // Progress steps
+  function setStep(n) {
+    steps.forEach((li, i) => {
+      li.classList.toggle('done', i < n);
+      li.classList.toggle('active', i === n);
+    });
+    bar.style.width = Math.min(100, (n / steps.length) * 100 + (n < steps.length ? 8 : 0)) + '%';
+  }
+  function startProgress() {
+    progress.classList.add('show');
+    setStep(0);
+    timers = [setTimeout(() => setStep(1), 1200), setTimeout(() => setStep(2), 7000), setTimeout(() => setStep(3), 13000)];
+  }
+  function stopProgress(success) {
+    timers.forEach(clearTimeout); timers = [];
+    if (success) { setStep(steps.length); setTimeout(() => progress.classList.remove('show'), 600); }
+    else progress.classList.remove('show');
+  }
+
+  function setBusy(b) {
+    busy = b; go.disabled = b; remove.disabled = b;
+    go.lastChild.textContent = b ? ' Working…' : ' Digitize';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (busy) return;
+    clearError();
+    if (!file) { showError('Please choose an image first.'); return; }
+
+    const fd = new FormData();
+    fd.append('csrf_token', form.elements.csrf_token.value);
+    fd.append('image', file, file.name);
+
+    setBusy(true);
+    results.classList.remove('show');
+    startProgress();
+
+    const ctrl = new AbortController();
+    const abortT = setTimeout(() => ctrl.abort(), 170000);
+    try {
+      const res = await fetch('?action=analyze', { method: 'POST', body: fd, signal: ctrl.signal, credentials: 'same-origin', headers: { 'Accept': 'application/json' } });
+      let data = null;
+      try { data = await res.json(); } catch (_) { /* non-JSON */ }
+      if (!data) throw new Error(res.status === 413 ? 'That file is too large for the server. Please use an image under 6 MB.' : 'The server returned an unexpected response (HTTP ' + res.status + '). Please try again.');
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
+
+      stopProgress(true);
+      panelS.innerHTML = data.html;           // already escaped server-side with htmlspecialchars
+      md.value = data.markdown;               // plain text: never interpreted as HTML
+      mdName = (data.title || 'notes').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'notes';
+      selectTab(tabS);
+      results.classList.add('show');
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      stopProgress(false);
+      showError(err.name === 'AbortError'
+        ? 'This is taking too long. Please try again with a smaller or clearer image.'
+        : (err instanceof TypeError ? 'Network error — please check your connection and try again.' : err.message));
+    } finally {
+      clearTimeout(abortT);
+      setBusy(false);
+    }
+  });
+
+  // Tabs (with arrow-key support)
+  function selectTab(tab) {
+    [tabS, tabM].forEach((t) => {
+      const on = t === tab;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+      $(t.getAttribute('aria-controls')).hidden = !on;
+    });
+  }
+  [tabS, tabM].forEach((t) => {
+    t.addEventListener('click', () => selectTab(t));
+    t.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        const next = t === tabS ? tabM : tabS; selectTab(next); next.focus();
+      }
+    });
+  });
+
+  // Copy + download
+  $('copy').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(md.value);
+    } catch (_) {
+      md.focus(); md.select();
+      try { document.execCommand('copy'); } catch (__) { showToast('Press Ctrl+C to copy'); return; }
+      md.setSelectionRange(0, 0);
+    }
+    showToast('Markdown copied');
+  });
+  $('dl').addEventListener('click', () => {
+    const url = URL.createObjectURL(new Blob([md.value], { type: 'text/markdown;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = mdName + '.md';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+})();
+</script>
+</body>
+</html>

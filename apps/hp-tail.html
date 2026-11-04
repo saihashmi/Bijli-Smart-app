@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>House Price Predictor | Dr. Syed Asif Hashmi</title>
+<meta name="description" content="AI-powered Karachi house price predictor: a regression model trained on local sales estimates the price, and Gemini explains what drives it.">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Antonio:wght@600;700&family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Theme: matches syedasifhashmi.com (deep ink, blue/red stage light, serif display + condensed accents) */
+:root{
+  --ink:#04060C; --ink-2:#090D17; --ink-3:#0F1422;
+  --text:#F2F4F8; --muted:#A5ADBE; --dim:#7D8598;
+  --line:rgba(190,205,235,.12); --line-2:rgba(190,205,235,.22);
+  --blue:#2EB8F0; --red:#E5485E; --teal:#1FD3A2;
+  --accent:#1FD3A2; --accent2:#2EB8F0; --neg:#F0647A; --warn:#F2B84B;
+  --card:rgba(15,20,34,.72); --card-b:rgba(190,205,235,.14);
+  --duo:linear-gradient(115deg,var(--blue),var(--red));
+  --f-cond:"Antonio","Arial Narrow",Impact,sans-serif;
+  --f-serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --f-sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --radius:4px; color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--f-sans);color:var(--text);min-height:100vh;line-height:1.6;background:var(--ink);position:relative;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.022) 0 1px,transparent 1px 18px),
+  radial-gradient(700px 520px at 8% 0%,rgba(46,140,240,.28),transparent 70%),
+  radial-gradient(640px 520px at 100% 30%,rgba(229,72,94,.20),transparent 70%),
+  radial-gradient(700px 500px at 30% 110%,rgba(46,120,240,.16),transparent 70%)}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:4px}
+
+/* Site bar */
+.sitebar{position:sticky;top:0;z-index:20;background:rgba(4,6,12,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.sb-in{max-width:1180px;margin:0 auto;padding:0 max(20px,env(safe-area-inset-left,0px));height:68px;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.sb-brand{display:flex;align-items:center;gap:.6rem;text-decoration:none}
+.sb-brand img{width:34px;height:auto}
+.sb-brand span{font:400 1.3rem/1 var(--f-serif)}
+.sb-nav{display:flex;align-items:center;gap:.4rem}
+.sb-nav a{text-decoration:none;font-size:.86rem;font-weight:600;color:var(--muted);padding:.5rem .7rem;border-radius:999px}
+.sb-nav a:hover{color:var(--text)}
+.sb-nav .sb-pill{position:relative;color:var(--text);padding:.55rem 1rem;isolation:isolate;letter-spacing:.04em;text-transform:uppercase;font-size:.74rem}
+.sb-pill::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;background:var(--duo);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;z-index:-1}
+@media (max-width:560px){.sb-nav a:not(.sb-pill){display:none}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:3.2rem max(20px,env(safe-area-inset-left,0px)) 4rem}
+
+/* Hero */
+header.apphero{margin-bottom:2.6rem;display:flex;flex-direction:column;gap:.9rem;max-width:760px}
+.badge{display:inline-flex;align-items:center;gap:.55rem;font:600 .72rem/1 var(--f-sans);letter-spacing:.24em;text-transform:uppercase;color:var(--blue)}
+.badge::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px rgba(31,211,162,.18)}
+h1{font:400 clamp(2.6rem,6vw,4.6rem)/1 var(--f-serif);letter-spacing:-.02em}
+h1 em{font-style:italic}
+.sub{color:var(--muted);font-size:1.05rem;max-width:60ch}
+
+/* Layout */
+.grid{display:grid;grid-template-columns:380px minmax(0,1fr);gap:1.4rem;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.card{position:relative;background:var(--card);border:1px solid var(--card-b);border-radius:var(--radius);padding:1.7rem;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 30px 60px -40px #000;min-width:0}
+form.card::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--duo)}
+.card h2{font:700 1.5rem/1 var(--f-cond);text-transform:uppercase;letter-spacing:.01em;margin-bottom:1.2rem}
+
+/* Form */
+label{display:block;font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:1.1rem 0 .45rem}
+input,select{width:100%;padding:.8rem .9rem;min-height:46px;border-radius:2px;border:1px solid var(--line-2);background:rgba(4,6,12,.55);color:var(--text);font:inherit;font-size:1rem;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(46,184,240,.18)}
+select option{background:var(--ink-3)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.hint{font-size:.8rem;color:var(--dim);margin-top:.35rem}
+button{margin-top:1.6rem;width:100%;min-height:52px;border:0;border-radius:999px;cursor:pointer;font:600 .86rem/1 var(--f-sans);letter-spacing:.08em;text-transform:uppercase;color:#fff;
+  background:linear-gradient(115deg,rgba(46,184,240,.9),rgba(229,72,94,.9));box-shadow:-10px 8px 28px -12px rgba(46,150,240,.6),10px 8px 28px -12px rgba(229,72,94,.55);transition:transform .2s,filter .2s}
+button:hover{transform:translateY(-2px);filter:brightness(1.08)}
+button:disabled{opacity:.6;cursor:wait;transform:none}
+
+/* Alerts */
+.alert{padding:.9rem 1rem;border-radius:2px;margin-bottom:1.1rem;font-size:.92rem}
+.alert.err{background:rgba(240,100,122,.10);border:1px solid rgba(240,100,122,.35);color:#FFC9D1}
+.alert.warn{background:rgba(242,184,75,.08);border:1px solid rgba(242,184,75,.35);color:#F8DDA6}
+
+/* Result */
+.price-box{position:relative;overflow:hidden;text-align:left;padding:1.8rem 1.6rem;margin-bottom:1.4rem;border:1px solid var(--line-2);
+  background:radial-gradient(420px 220px at 100% 0%,rgba(229,72,94,.28),transparent 70%),radial-gradient(420px 260px at 0% 100%,rgba(46,140,240,.30),transparent 70%),var(--ink-2)}
+.price-box .lbl{font-size:.72rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--blue)}
+.price-box .val{font:700 clamp(2.6rem,6vw,4rem)/1 var(--f-cond);letter-spacing:-.005em;margin:.6rem 0 .5rem}
+.price-box .full{color:var(--muted);font-size:.92rem;font-variant-numeric:tabular-nums}
+.range{margin-top:.5rem;font-size:.92rem;color:var(--teal)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:1.6rem}
+.stat{background:var(--ink-2);padding:1rem .9rem;text-align:left}
+.stat b{display:block;font:700 1.9rem/1 var(--f-cond);font-variant-numeric:tabular-nums}
+.stat span{display:block;margin-top:.4rem;font-size:.78rem;color:var(--dim)}
+h3{font:400 1.55rem/1.15 var(--f-serif);margin:1.8rem 0 .9rem;color:var(--text)}
+h3 small{font-family:var(--f-sans);font-size:.78rem}
+.factor{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr) 70px;gap:.8rem;align-items:center;padding:.7rem 0;border-bottom:1px dashed var(--line-2);font-size:.92rem}
+.factor small{display:block;color:var(--dim);font-size:.76rem}
+.bar{height:8px;background:rgba(255,255,255,.07);border-radius:99px;position:relative;overflow:hidden}
+.bar::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--line-2)}
+.bar i{position:absolute;top:0;bottom:0;border-radius:99px}
+.pos{color:var(--accent)} .neg{color:var(--neg)} .neu{color:var(--muted)}
+.ai-summary{border-left:2px solid;border-image:var(--duo) 1;padding:.9rem 1.1rem;background:rgba(46,184,240,.06);font-size:1rem}
+.list{display:grid;gap:.7rem}
+.item{background:var(--ink-2);border:1px solid var(--line);padding:.9rem 1rem;font-size:.92rem;color:var(--muted)}
+.item .t{font-weight:600;color:var(--text);margin-bottom:.3rem;display:flex;justify-content:space-between;gap:.8rem;align-items:center}
+.pill{font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .6rem;border-radius:999px;white-space:nowrap;border:1px solid}
+.pill.high,.pill.positive{color:var(--accent);border-color:rgba(31,211,162,.4)}
+.pill.medium,.pill.neutral{color:var(--warn);border-color:rgba(242,184,75,.4)}
+.pill.low,.pill.negative{color:var(--neg);border-color:rgba(240,100,122,.4)}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);padding:3.5rem 1rem;min-height:340px;gap:1rem}
+.empty .ico{width:84px;height:84px;display:grid;place-items:center;border:1px solid var(--line-2);border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(46,184,240,.25),transparent 70%)}
+.empty .ico svg{width:38px;height:38px;color:var(--blue)}
+.empty p{max-width:36ch}
+details{margin-top:1.2rem;font-size:.86rem;color:var(--dim)}
+details summary{cursor:pointer;color:var(--muted);font-weight:600}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:rgba(4,6,12,.6);border:1px solid var(--line);padding:.9rem;margin-top:.6rem;font:.78rem/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;color:#CDD6E8;max-height:360px;overflow:auto}
+
+/* Footer */
+footer.appfoot{margin-top:3rem;padding-top:1.6rem;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;justify-content:space-between;gap:.8rem 2rem;font-size:.84rem;color:var(--dim)}
+footer.appfoot a{color:var(--muted);text-decoration:none;font-weight:600}
+footer.appfoot a:hover{color:var(--text)}
+@media (max-width:560px){.factor{grid-template-columns:minmax(0,1fr) 64px}.factor .bar{grid-column:1/-1;grid-row:2}.stats{grid-template-columns:1fr 1fr 1fr}.card{padding:1.3rem}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="sitebar">
+  <div class="sb-in">
+    <a class="sb-brand" href="/" aria-label="Dr. Syed Asif Hashmi, portfolio home"><img src="/assets/logo-mark.png" alt="" width="34" height="26"><span>Asif Hashmi</span></a>
+    <nav class="sb-nav" aria-label="Site">
+      <a href="/#work">Live work</a>
+      <a href="/#contact">Contact</a>
+      <a class="sb-pill" href="/">← Portfolio</a>
+    </nav>
+  </div>
+</header>
+<div class="wrap">
+  <header class="apphero">
+    <span class="badge">AI-powered · Karachi real estate</span>
+    <h1>House Price <em>Predictor</em></h1>
+    <p class="sub">A regression model trained on local sales data estimates the price. Google Gemini then explains what drives it and how to add value.</p>
+  </header>
+
+  <?php if ($fatal): ?>
+    <div class="card"><div class="alert err"><?= e($fatal) ?></div></div>
+  <?php else: ?>
+  <div class="grid">
+    <!-- ===== Input form ===== -->
+    <form class="card" method="post" id="predictForm" novalidate>
+      <h2>Property details</h2>
+      <?php foreach ($errors as $err): ?><div class="alert err"><?= e($err) ?></div><?php endforeach; ?>
+      <input type="hidden" name="csrf" value="<?= e($_SESSION['csrf']) ?>">
+
+      <label for="location">Location</label>
+      <select id="location" name="location" required>
+        <option value="">Select an area…</option>
+        <?php foreach ($model->locations as $loc): ?>
+          <option value="<?= e($loc) ?>" <?= $input['location'] === $loc ? 'selected' : '' ?>><?= e($loc) ?></option>
+        <?php endforeach; ?>
+      </select>
+
+      <label for="area">Covered area (sq ft)</label>
+      <input id="area" name="area" type="number" min="300" max="50000" step="1" value="<?= e($input['area']) ?>" required>
+      <div class="hint" id="yardHint">≈ <?= e(round((int) $input['area'] / 9)) ?> sq yd</div>
+
+      <div class="row">
+        <div>
+          <label for="bedrooms">Bedrooms</label>
+          <input id="bedrooms" name="bedrooms" type="number" min="1" max="15" value="<?= e($input['bedrooms']) ?>" required>
+        </div>
+        <div>
+          <label for="bathrooms">Bathrooms</label>
+          <input id="bathrooms" name="bathrooms" type="number" min="1" max="15" value="<?= e($input['bathrooms']) ?>" required>
+        </div>
+      </div>
+
+      <label for="age">Property age (years)</label>
+      <input id="age" name="age" type="number" min="0" max="100" value="<?= e($input['age']) ?>" required>
+
+      <button type="submit" id="submitBtn">Predict price</button>
+
+      <details>
+        <summary>About the model</summary>
+        <p style="margin-top:8px">Multiple linear regression (OLS) on ln(price) using ln(area), bedrooms, bathrooms, age and location, trained on <?= e($model->n) ?> transactions.
+        R² = <?= e(number_format($model->rSquared, 3)) ?>, average error ≈ <?= e(number_format($model->mape * 100, 1)) ?>%.</p>
+      </details>
+    </form>
+
+    <!-- ===== Results ===== -->
+    <section class="card">
+      <?php if ($result === null): ?>
+        <div class="empty">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 21h18"/><path d="M6 17v-5M11 17V7M16 17v-8M21 17V4"/></svg></div>
+          <p>Enter the property details and press <b>Predict price</b> to see the estimate and AI explanation.</p>
+        </div>
+      <?php else: ?>
+        <?php if ($warnInputs): ?>
+          <div class="alert warn">This size is outside the range in the training data (1,080–9,000 sq ft), so treat the estimate with extra caution.</div>
+        <?php endif; ?>
+
+        <div class="price-box">
+          <div class="lbl">Estimated market value</div>
+          <div class="val"><?= e(formatPkr($result['price'])) ?></div>
+          <div class="full">PKR <?= e(number_format($result['price'])) ?></div>
+          <div class="range">Likely range: <?= e(formatPkr($result['low'])) ?> – <?= e(formatPkr($result['high'])) ?></div>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><b><?= e(number_format($model->rSquared, 3)) ?></b><span>R² (fit)</span></div>
+          <div class="stat"><b><?= e(number_format($model->mape * 100, 1)) ?>%</b><span>Avg. error</span></div>
+          <div class="stat"><b><?= e($model->n) ?></b><span>Training sales</span></div>
+        </div>
+
+        <h3>Model factor impact <small style="color:var(--muted);font-weight:400">(vs. an average property)</small></h3>
+        <?php
+          $maxAbs = max(1, ...array_map(static fn($f) => abs($f['impact_pct']), $result['factors']));
+          foreach ($result['factors'] as $f):
+            $pct   = $f['impact_pct'];
+            $width = min(50, abs($pct) / $maxAbs * 50);
+            $cls   = $pct > 0.5 ? 'pos' : ($pct < -0.5 ? 'neg' : 'neu');
+            $style = $pct >= 0
+                ? "left:50%;width:{$width}%;background:var(--accent)"
+                : "right:50%;width:{$width}%;background:var(--neg)";
+        ?>
+          <div class="factor">
+            <div><?= e($f['factor']) ?><small><?= e($f['your_value']) ?> · avg <?= e($f['dataset_avg']) ?></small></div>
+            <div class="bar"><i style="<?= e($style) ?>"></i></div>
+            <div class="<?= $cls ?>" style="text-align:right;font-weight:700"><?= $pct > 0 ? '+' : '' ?><?= e(number_format($pct, 1)) ?>%</div>
+          </div>
+        <?php endforeach; ?>
+
+        <h3>AI <em>explanation</em> <small style="color:var(--muted);font-weight:400">(Gemini · <?= e($GEMINI_MODEL) ?>)</small></h3>
+        <?php if (!$ai['ok']): ?>
+          <div class="alert warn"><?= e($ai['error']) ?></div>
+        <?php else: $d = $ai['data']; ?>
+          <div class="ai-summary"><?= e($d['summary'] ?? '') ?></div>
+
+          <h3>Major factors</h3>
+          <div class="list">
+            <?php foreach (($d['major_factors'] ?? []) as $mf): $dir = in_array($mf['direction'] ?? '', ['positive','negative','neutral'], true) ? $mf['direction'] : 'neutral'; ?>
+              <div class="item">
+                <div class="t"><?= e($mf['factor'] ?? '') ?> <span class="pill <?= $dir ?>"><?= e($dir) ?></span></div>
+                <?= e($mf['explanation'] ?? '') ?>
+              </div>
+            <?php endforeach; ?>
+          </div>
+
+          <h3>Suggested improvements</h3>
+          <div class="list">
+            <?php foreach (($d['improvements'] ?? []) as $im): $pr = in_array($im['priority'] ?? '', ['high','medium','low'], true) ? $im['priority'] : 'medium'; ?>
+              <div class="item">
+                <div class="t"><?= e($im['suggestion'] ?? '') ?> <span class="pill <?= $pr ?>"><?= e($pr) ?></span></div>
+                <?= e($im['expected_effect'] ?? '') ?>
+              </div>
+            <?php endforeach; ?>
+          </div>
+
+          <?php if (!empty($d['caveats'])): ?>
+            <p class="hint" style="margin-top:14px">Note: <?= e($d['caveats']) ?></p>
+          <?php endif; ?>
+
+          <details>
+            <summary>Raw JSON from Gemini</summary>
+            <pre><?= e(json_encode($d, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) ?></pre>
+          </details>
+        <?php endif; ?>
+      <?php endif; ?>
+    </section>
+  </div>
+  <?php endif; ?>
+
+  <footer class="appfoot">
+    <span>Estimates come from a statistical model trained on sample data and are not a professional valuation.</span>
+    <span>Built by <a href="/">Dr. Syed Asif Hashmi</a></span>
+  </footer>
+</div>
+
+<script>
+  const area = document.getElementById('area'), hint = document.getElementById('yardHint');
+  if (area && hint) area.addEventListener('input', () => hint.textContent = '≈ ' + Math.round((+area.value || 0) / 9) + ' sq yd');
+  const form = document.getElementById('predictForm'), btn = document.getElementById('submitBtn');
+  if (form) form.addEventListener('submit', () => { btn.disabled = true; btn.textContent = 'Calculating & asking Gemini…'; });
+</script>
+</body>
+</html>
