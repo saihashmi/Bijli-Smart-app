@@ -1,0 +1,14 @@
+mobile performance:97 accessibility:100 best-practices:100 seo:100 LCP 2.1 s TBT 50 ms CLS 0.046 FCP 2.0 s
+  - first-contentful-paint 0.84 2.0 s
+  - unused-javascript 0 Potential savings of 57 KiB
+  - dom-size 0.5 854 elements
+  # mainthread-work-breakdown [["other",691,0,0],["scriptEvaluation",566,0,0],["styleLayout",354,0,0],["paintCompositeRender",103,0,0],["garbageCollection",19,0,0],["parseHTML",4,0,0],["scriptParseCompile",2,0,0]]
+  # bootup-time [["http://localhost:8080/assets/index-CSSqArtJ.js",1197,555,0],["http://localhost:8080/",370,4,0],["Unattributable",167,5,0]]
+  # long-tasks [["http://localhost:8080/assets/index-CSSqArtJ.js",116,0,2322],["http://localhost:8080/assets/index-CSSqArtJ.js",79,0,2438]]
+desktop performance:100 accessibility:100 best-practices:100 seo:100 LCP 0.5 s TBT 0 ms CLS 0.007 FCP 0.5 s
+  - unused-javascript 0 Potential savings of 55 KiB
+  - uses-responsive-images 0.5 Potential savings of 14 KiB
+  - dom-size 0.5 854 elements
+  # mainthread-work-breakdown [["other",208,0,0],["scriptEvaluation",145,0,0],["styleLayout",106,0,0],["paintCompositeRender",32,0,0],["garbageCollection",3,0,0],["parseHTML",1,0,0],["scriptParseCompile",1,0,0]]
+  # bootup-time [["http://localhost:8080/assets/index-CSSqArtJ.js",390,143,0],["http://localhost:8080/",74,1,0]]
+  # long-tasks []
