@@ -1,0 +1,25 @@
+name: p3d-lighthouse
+on:
+  push:
+    branches: [p3d-lh]
+permissions:
+  contents: write
+jobs:
+  lh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: |
+          cd dist && (python3 -m http.server 8080 >/dev/null 2>&1 &) && sleep 2
+      - run: |
+          mkdir -p out
+          for ff in mobile desktop; do
+            P=""; [ "$ff" = desktop ] && P="--preset=desktop"
+            npx -y lighthouse@12.2.1 http://localhost:8080/ $P --only-categories=performance,accessibility,best-practices,seo \
+              --output=json --output-path=out/$ff.json --chrome-flags="--headless=new --no-sandbox" --quiet || true
+            node -e "const r=require('./out/$ff.json');const c=r.categories;const a=r.audits;console.log('$ff',Object.keys(c).map(k=>k+':'+Math.round(c[k].score*100)).join(' '),'LCP',a['largest-contentful-paint'].displayValue,'TBT',a['total-blocking-time'].displayValue,'CLS',a['cumulative-layout-shift'].displayValue,'FCP',a['first-contentful-paint'].displayValue);for(const k of Object.keys(a)){const x=a[k];if(x.score!==null&&x.score<0.9&&x.scoreDisplayMode!=='informative'&&x.scoreDisplayMode!=='notApplicable'&&x.scoreDisplayMode!=='manual')console.log('  -',k,x.score,x.displayValue||'')}" >> out/summary.txt
+          done
+          cat out/summary.txt
+          cd out && git init -q -b p3d-lh-out && git config user.email noreply@anthropic.com && git config user.name Claude && git add summary.txt && git commit -qm lh && git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" p3d-lh-out
