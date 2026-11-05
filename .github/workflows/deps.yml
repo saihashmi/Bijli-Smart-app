@@ -1,0 +1,26 @@
+name: p3d-deps
+on:
+  push:
+    branches: [p3d-ci]
+permissions:
+  contents: write
+jobs:
+  deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: |
+          tar czf deps.tgz node_modules package-lock.json
+          ls -la deps.tgz
+          split -b 90m deps.tgz deps.tgz.part-
+          mkdir out && mv deps.tgz.part-* out/
+          cd out
+          git init -q -b p3d-deps
+          git config user.email "noreply@anthropic.com"
+          git config user.name "Claude"
+          git add . && git commit -qm "deps tarball"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" p3d-deps
