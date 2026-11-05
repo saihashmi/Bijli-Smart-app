@@ -12,7 +12,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - run: |
-          cd dist && (python3 -m http.server 8080 >/dev/null 2>&1 &) && sleep 2
+          (node serve.js &) && sleep 2
       - run: |
           mkdir -p out
           for ff in mobile desktop; do
