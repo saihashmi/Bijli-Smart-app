@@ -3,8 +3,8 @@
 Read this first when continuing work. Source of truth: `SPEC.md` (approved) and `PLAN.md`.
 
 ## Status
-- Phase: **02 PLAN, awaiting approval** (01 SPEC approved 2026-11-12)
-- Current milestone: none started
+- Phase: **03 BUILD**. SPEC and PLAN approved 2026-11-12.
+- Current milestone: **M1 complete, awaiting approval**. Next: M2 (frontend shell, branding, navigation).
 - Branch: `ccr-47143d17-8h5n17`. Push with `git push -u origin ccr-47143d17-8h5n17`.
 
 ## Workflow rules (from the product owner)
@@ -28,21 +28,40 @@ Read this first when continuing work. Source of truth: `SPEC.md` (approved) and 
 | Local-only mode with a workspace cookie (not auth) | MVP default D2. Public hosting blocked until real auth exists. |
 | AI = intent → allowlisted operation; explanation verified against the result | AI never calculates |
 | Inter is self-hosted via @fontsource | No external font requests |
+| pandas 2.3.x (not 3.x) | 3.x changed default string and copy behaviour. 2.3 is mature and audited clean. |
+| shadcn/ui configured by hand (`components.json`, tokens, `cn`) | The `shadcn` CLI needs ui.shadcn.com, which this environment's network blocks. Components are written in shadcn's source form (new-york style, `radix-ui` package), and the CLI works unchanged where the network allows it. |
+| npm `overrides`: postcss ≥ 8.5.32, minimatch ≥ 11.0.1 (under typescript-estree only) | Closes `npm audit` findings in build/lint tooling without a breaking Next 16 upgrade |
+| Dark mode is class-based (`.dark`) | A theme switch with a system option arrives in M2 |
 
 ## Commands
-_(filled in during M1)_
+Run from `datadoctor/` (a Makefile wraps everything):
+
+| Task | Command |
+|---|---|
+| First-time setup | `make setup` (creates `backend/.venv`, runs `npm ci`) |
+| Backend dev server | `make backend` → http://127.0.0.1:8000 (API docs at `/api/docs`) |
+| Frontend dev server | `make frontend` → http://localhost:3000 (proxies `/api/*` to `BACKEND_URL`) |
+| All unit tests | `make test` (pytest + vitest) |
+| Browser tests | `make e2e` (needs both servers running; uses the pre-installed Chromium, Playwright 1.63.0) |
+| Lint + typecheck | `make lint` (ruff check/format, eslint, tsc) |
+| Dependency audit | `make audit` (pip-audit, npm audit) |
+| Production frontend | `cd frontend && npm run build && npm run start` |
+
+Versions: Python 3.12+ (dev box runs 3.13), Node 20+ (dev box runs 22). Dependencies are pinned exactly.
 
 ## Architecture notes
 See PLAN.md §2 and §6.
 
 ## Known issues
-- None yet.
+- Pytest warning: Starlette's TestClient warns that `httpx` usage is deprecated (suggests `httpx2`). Harmless. Revisit when upgrading.
+- `/api/docs` (Swagger UI) loads its JS/CSS from a CDN, so it needs internet. The API itself does not.
+- The repo-root `backend/`, `frontend/`, `sample-data/` belong to paused Bijli Smart. Not touched.
 
 ## Completed milestones
-- None.
+- **M1. Repo setup and dev environment** (2026-11-12): `datadoctor/` skeleton matching PLAN §3. Backend: FastAPI skeleton + `/api/health`, config from env, ruff, pytest (2 tests). Frontend: Next.js 15.5.29 + React 19.1 + Tailwind 4.3 + shadcn conventions + brand tokens (light/dark) + Inter, eslint, vitest (1 test), Playwright smoke (2 tests, desktop and 360 px). `.env.example`, Makefile. Audits: pip-audit and npm audit, 0 known vulnerabilities.
 
 ## Pending
-- Approval of PLAN.md, then M1 (repo setup).
+- Product-owner approval of M1, then M2: theme switch + contrast check, AppShell (sidebar, mobile drawer, Local-mode badge), landing page, honest per-route "coming in milestone N" states.
 
 ## How to continue
 1. Read SPEC.md and PLAN.md.
