@@ -30,3 +30,32 @@ def test_upload_succeeds_while_another_session_is_being_parsed(monkeypatch):
         assert res.status_code == 201, res.text
         assert elapsed < 4, f"upload waited {elapsed:.1f}s for a lock"
         assert result["res"].status_code == 201, result["res"].text
+
+
+def test_concurrent_profile_requests_compute_once(monkeypatch):
+    import asyncio
+
+    import httpx
+
+    calls = []
+    real = sessions_router.run_limited
+
+    def counting(fn, *args, **kwargs):
+        calls.append(fn.__name__)
+        return real(fn, *args, **kwargs)
+
+    with TestClient(app) as c:  # runs startup (migrations) and creates the session
+        ds = c.post("/api/uploads", files={"file": ("a.xlsx", fx.profiling_workbook())}).json()
+        sid = c.post(f"/api/datasets/{ds['id']}/sessions", json={"sheet_index": 0}).json()["id"]
+        cookie = c.cookies.get("dd_workspace")
+    monkeypatch.setattr(sessions_router, "run_limited", counting)
+
+    async def fire():
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://t", cookies={"dd_workspace": cookie}) as ac:
+            return await asyncio.gather(*[ac.get(f"/api/sessions/{sid}/profile") for _ in range(4)])
+
+    responses = asyncio.run(fire())
+    assert [r.status_code for r in responses] == [200] * 4
+    assert calls.count("profile_snapshot") == 1
+    assert len({r.json()["calculated_at"] for r in responses}) == 1

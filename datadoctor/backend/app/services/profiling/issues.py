@@ -52,8 +52,10 @@ ACTIONS = {
 }
 
 
-def _excel_row(i: int, header_row: int) -> int:
-    return int(i) + header_row + 2
+def _excel_row(label: int, header_row: int) -> int:
+    """Spreadsheet row number of a data row. The DataFrame index holds each row's original position, which
+    survives cleaning steps that remove rows."""
+    return int(label) + header_row + 2
 
 
 def _show(v: Any) -> str:
@@ -109,7 +111,9 @@ class _Collector:
         out = []
         for i in idx:
             v = _show(series.iloc[i])
-            out.append({"row": _excel_row(i, self.header_row), "value": _mask_pii(v) if mask_values else v})
+            out.append(
+                {"row": _excel_row(series.index[i], self.header_row), "value": _mask_pii(v) if mask_values else v}
+            )
         return out
 
 
@@ -156,7 +160,7 @@ def detect(
             "high" if dups > 0.01 * n else "medium",
             "These rows are identical to an earlier row in every column, so totals and counts include them twice.",
             [
-                {"row": _excel_row(i, header_row), "value": " | ".join(_show(v) for v in df.iloc[i, :3])}
+                {"row": _excel_row(df.index[i], header_row), "value": " | ".join(_show(v) for v in df.iloc[i, :3])}
                 for i in np.flatnonzero(dup_mask)[:EXAMPLES]
             ],
         )
@@ -173,13 +177,14 @@ def detect(
                 "low",
                 "Rows with no values in any column.",
                 [
-                    {"row": _excel_row(i, header_row), "value": "(empty row)"}
+                    {"row": _excel_row(df.index[i], header_row), "value": "(empty row)"}
                     for i in np.flatnonzero(empty_rows)[:EXAMPLES]
                 ],
                 action_key="Q04r",
             )
     for change in context.get("header_changes", []):
-        if change["reason"] in ("blank", "duplicate"):
+        # Only while the column still carries the generated name (renaming it resolves the issue).
+        if change["reason"] in ("blank", "duplicate") and change["new"] in df.columns:
             what = "had no name" if change["reason"] == "blank" else f"repeated the name “{change['original']}”"
             col.add(
                 "Q14",

@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CheckCircle2, Lightbulb, Loader2, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2, Lightbulb, Loader2, ShieldCheck, Wand2 } from "lucide-react";
 import type { Issue, Severity } from "@/lib/api";
 import { formatInteger } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -20,7 +21,9 @@ export function IssueList({
   issues,
   onMarkSensitive,
   busyColumn,
+  sessionId,
 }: {
+  sessionId: string;
   issues: Issue[];
   onMarkSensitive: (column: string) => void;
   busyColumn: string | null;
@@ -129,7 +132,13 @@ export function IssueList({
                       {busyColumn === issue.column ? <Loader2 className="animate-spin" /> : <ShieldCheck />} Mark as sensitive
                     </Button>
                   ) : issue.suggested_action.operation ? (
-                    <span className="ml-auto text-xs text-muted-foreground">Apply it in the Cleaning Studio (Milestone 7)</span>
+                    <Button asChild size="sm" variant="outline" className="ml-auto">
+                      <Link
+                        href={`/s/${sessionId}/clean?op=${issue.suggested_action.operation}${issue.column ? `&column=${encodeURIComponent(issue.column)}` : ""}`}
+                      >
+                        <Wand2 /> Fix in Cleaning Studio
+                      </Link>
+                    </Button>
                   ) : null}
                 </div>
               </CardContent>

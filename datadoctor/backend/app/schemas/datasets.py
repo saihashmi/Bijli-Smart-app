@@ -96,7 +96,27 @@ class RowsOut(BaseModel):
     total: int
     columns: list[str]
     rows: list[list[str | None]]
+    row_numbers: list[int] = []
 
 
 class SensitiveColumnsIn(BaseModel):
     columns: list[str] = Field(max_length=500)
+
+
+class CleaningRequest(BaseModel):
+    operation_type: str = Field(max_length=64)
+    parameters: dict = Field(default_factory=dict)
+    confirm: bool = False
+
+
+class OperationOut(BaseModel):
+    id: str
+    sequence_number: int
+    operation_type: str
+    title: str
+    parameters: dict
+    affected_rows: int
+    status: str
+    created_at: datetime
+    undone_at: datetime | None = None
+    summary: str | None = None

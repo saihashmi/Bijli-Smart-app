@@ -181,7 +181,12 @@ export function HealthView() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="issues">
-              <IssueList issues={profile.issues} busyColumn={busyColumn} onMarkSensitive={(c) => setSensitive(c, true)} />
+              <IssueList
+                sessionId={session.id}
+                issues={profile.issues}
+                busyColumn={busyColumn}
+                onMarkSensitive={(c) => setSensitive(c, true)}
+              />
             </TabsContent>
             <TabsContent value="columns" className="space-y-4">
               <div className="relative max-w-sm">
@@ -218,6 +223,7 @@ export function HealthView() {
                     sessionId={session.id}
                     columns={session.column_names}
                     total={session.rows ?? 0}
+                    version={session.version}
                     profiles={profile.column_profiles}
                   />
                 </CardContent>

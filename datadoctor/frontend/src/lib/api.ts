@@ -140,7 +140,92 @@ export type AnalysisSession = {
   expires_at: string;
 };
 
-export type RowsPage = { view: string; version: number; offset: number; total: number; columns: string[]; rows: (string | null)[][] };
+export type RowsPage = {
+  view: string;
+  version: number;
+  offset: number;
+  total: number;
+  columns: string[];
+  rows: (string | null)[][];
+  row_numbers: number[];
+};
+
+export type OpField = {
+  name: string;
+  kind:
+    | "column"
+    | "columns"
+    | "select"
+    | "boolean"
+    | "text"
+    | "number"
+    | "tokens"
+    | "category_mapping"
+    | "rename_mapping"
+    | "column_order"
+    | "date_interpretation";
+  label: string;
+  default?: unknown;
+  options?: { value: string; label: string }[];
+  optional?: boolean;
+  help?: string;
+  filter?: "text" | "number" | "date";
+  show_if?: Record<string, unknown>;
+};
+
+export type OperationSpec = {
+  id: string;
+  title: string;
+  group: string;
+  description: string;
+  fields: OpField[];
+  always_destructive: boolean;
+};
+
+export type PreviewRow = {
+  row: number;
+  before: Record<string, string | null>;
+  after: Record<string, string | null>;
+  removed: boolean;
+  /** Columns whose shown text is unchanged but whose stored type changed (text → number/date). */
+  converted: string[];
+};
+
+export type OpPreview = {
+  operation_type: string;
+  title: string;
+  parameters: Record<string, unknown>;
+  destructive: boolean;
+  affected_rows: number;
+  rows_before: number;
+  rows_after: number;
+  removed_rows: number;
+  added_columns: string[];
+  removed_columns: string[];
+  renamed: Record<string, string>;
+  summary: string;
+  warnings: string[];
+  failure_count: number;
+  failures: { row: number; column: string; value: string; reason: string }[];
+  columns_before: string[];
+  columns_after: string[];
+  sample: PreviewRow[];
+};
+
+export type AppliedOperation = {
+  id: string;
+  sequence_number: number;
+  operation_type: string;
+  title: string;
+  parameters: Record<string, unknown>;
+  affected_rows: number;
+  status: "active" | "undone";
+  created_at: string;
+  undone_at: string | null;
+  summary: string | null;
+};
+
+export type CategoryGroup = { suggested: string; variants: { label: string; count: number }[] };
 
 export type ColumnType = "integer" | "number" | "date" | "datetime" | "boolean" | "category" | "text" | "other" | "empty";
 
@@ -270,6 +355,19 @@ export const api = {
     request<AnalysisSession>(`/datasets/${id}/sessions`, json("POST", { sheet_index, header_row })),
   sessions: () => request<AnalysisSession[]>("/sessions"),
   session: (id: string) => request<AnalysisSession>(`/sessions/${id}`),
+  operations: () => request<OperationSpec[]>("/cleaning/operations"),
+  previewOp: (id: string, operation_type: string, parameters: Record<string, unknown>) =>
+    request<OpPreview>(`/sessions/${id}/cleaning/preview`, json("POST", { operation_type, parameters })),
+  applyOp: (id: string, operation_type: string, parameters: Record<string, unknown>, confirm: boolean) =>
+    request<{ operation: AppliedOperation; result: OpPreview; session: AnalysisSession }>(
+      `/sessions/${id}/cleaning/apply`,
+      json("POST", { operation_type, parameters, confirm }),
+    ),
+  categorySuggestions: (id: string, column: string) =>
+    request<{ column: string; groups: CategoryGroup[] }>(
+      `/sessions/${id}/cleaning/category-suggestions?column=${encodeURIComponent(column)}`,
+    ),
+  history: (id: string) => request<AppliedOperation[]>(`/sessions/${id}/history`),
   rows: (id: string, offset: number, limit: number, view: "current" | "original" = "current") =>
     request<RowsPage>(`/sessions/${id}/rows?view=${view}&offset=${offset}&limit=${limit}`),
   profile: (id: string) => request<Profile>(`/sessions/${id}/profile`),

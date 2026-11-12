@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
-import { ComingSoon } from "@/components/layout/coming-soon";
+import { Suspense } from "react";
+import { CleaningStudio } from "@/components/cleaning/cleaning-studio";
 import { PageHeader } from "@/components/layout/page-header";
 
 export const metadata: Metadata = { title: "Cleaning Studio" };
 
-export default function Page() {
+export default function CleanPage() {
   return (
     <>
-      <PageHeader title="Cleaning Studio" />
-      <ComingSoon milestone={7} title="Cleaning Studio" points={["Preview each fix on your full data before applying it", "Undo any step, or reset to the original file at any time", "A complete history of every change for your audit trail"]} />
+      <PageHeader
+        title="Cleaning Studio"
+        description="Preview each fix on your full data, then apply it. Your original file is never changed."
+      />
+      <Suspense>
+        <CleaningStudio />
+      </Suspense>
     </>
   );
 }

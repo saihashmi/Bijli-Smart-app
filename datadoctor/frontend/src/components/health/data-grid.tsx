@@ -17,14 +17,19 @@ export function DataGrid({
   columns,
   total,
   profiles,
+  view = "current",
+  version = 0,
 }: {
   sessionId: string;
   columns: string[];
   total: number;
   profiles?: ColumnProfile[];
+  view?: "current" | "original";
+  /** Changing the version clears cached pages (data changed). */
+  version?: number;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
-  const pages = useRef(new Map<number, (string | null)[][]>());
+  const pages = useRef(new Map<number, { rows: (string | null)[][]; nums: number[] }>());
   const pending = useRef(new Set<number>());
   const [, setTick] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -43,16 +48,22 @@ export function DataGrid({
       if (pages.current.has(page) || pending.current.has(page)) return;
       pending.current.add(page);
       api
-        .rows(sessionId, page * PAGE, PAGE)
+        .rows(sessionId, page * PAGE, PAGE, view)
         .then((res) => {
-          pages.current.set(page, res.rows);
+          pages.current.set(page, { rows: res.rows, nums: res.row_numbers });
           setTick((t) => t + 1);
         })
         .catch((e: unknown) => setError(e instanceof ApiError ? e.message : "Could not load rows."))
         .finally(() => pending.current.delete(page));
     },
-    [sessionId],
+    [sessionId, view],
   );
+
+  useEffect(() => {
+    pages.current.clear();
+    pending.current.clear();
+    setTick((t) => t + 1);
+  }, [version, view]);
 
   const items = rowV.getVirtualItems();
   const first = items[0]?.index ?? 0;
@@ -61,7 +72,8 @@ export function DataGrid({
     for (let p = Math.floor(first / PAGE); p <= Math.floor(last / PAGE); p++) load(p);
   }, [first, last, load]);
 
-  const cell = (r: number, c: number) => pages.current.get(Math.floor(r / PAGE))?.[r % PAGE]?.[c];
+  const cell = (r: number, c: number) => pages.current.get(Math.floor(r / PAGE))?.rows[r % PAGE]?.[c];
+  const rowNumber = (r: number) => pages.current.get(Math.floor(r / PAGE))?.nums[r % PAGE];
   const types = new Map(profiles?.map((p) => [p.name, p]));
   const width = NUM_W + colV.getTotalSize();
 
@@ -76,7 +88,7 @@ export function DataGrid({
         role="grid"
         aria-rowcount={total + 1}
         aria-colcount={columns.length + 1}
-        aria-label="Data preview"
+        aria-label={view === "original" ? "Original data" : "Data preview"}
         tabIndex={0}
         data-testid="data-grid"
       >
@@ -116,7 +128,7 @@ export function DataGrid({
                 className="sticky left-0 z-10 flex shrink-0 items-center justify-end border-r bg-muted/80 px-2 text-xs text-muted-foreground tabular-nums"
                 style={{ width: NUM_W }}
               >
-                {r.index + 1}
+                {rowNumber(r.index) ?? ""}
               </div>
               <div className="relative" style={{ width: colV.getTotalSize() }}>
                 {colV.getVirtualItems().map((c) => {
@@ -139,8 +151,8 @@ export function DataGrid({
         </div>
       </div>
       <p className="text-xs text-muted-foreground">
-        {formatInteger(total)} rows × {formatInteger(columns.length)} columns. Values are shown exactly as stored; empty cells
-        show as ·. Rows load as you scroll.
+        {formatInteger(total)} rows × {formatInteger(columns.length)} columns. Row numbers are the rows of your original
+        sheet. Empty cells show as ·. Rows load as you scroll.
       </p>
     </div>
   );

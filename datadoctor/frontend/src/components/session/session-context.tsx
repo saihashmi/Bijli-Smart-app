@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SessionHeader } from "./session-header";
 
-type Ctx = { session: AnalysisSession; reload: () => void };
+type Ctx = { session: AnalysisSession; reload: () => void; setSession: (s: AnalysisSession) => void };
 const SessionCtx = createContext<Ctx | null>(null);
 
 export function useAnalysisSession(): Ctx {
@@ -73,7 +73,7 @@ export function SessionProvider({ sessionId, children }: { sessionId: string; ch
     );
 
   return (
-    <SessionCtx.Provider value={{ session, reload }}>
+    <SessionCtx.Provider value={{ session, reload, setSession }}>
       <SessionHeader session={session} />
       {children}
     </SessionCtx.Provider>

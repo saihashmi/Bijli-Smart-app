@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
+from collections import defaultdict
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query
@@ -27,13 +29,15 @@ from ..worker import run_limited
 from .datasets import original_path, sheet_out
 
 router = APIRouter(prefix="/api", tags=["sessions"])
+_profile_locks: defaultdict[tuple[str, str], asyncio.Lock] = defaultdict(asyncio.Lock)
 
 MAX_PAGE = 500
 
 
 def current_version(sess: AnalysisSession) -> int:
-    """Snapshot version holding the current data. Cleaning (Milestone 7) will advance this."""
-    return 0
+    """Snapshot version holding the current data: the sequence number of the last active operation (0 = original)."""
+    active = [op.sequence_number for op in sess.operations if op.status == "active"]
+    return max(active) if active else 0
 
 
 def version_hash(sess: AnalysisSession) -> str:
@@ -44,7 +48,8 @@ def version_hash(sess: AnalysisSession) -> str:
 def session_out(sess: AnalysisSession) -> SessionOut:
     ds = sess.dataset
     ws = next((w for w in ds.worksheets if w.id == sess.worksheet_id), None)
-    meta = snapshots.read_meta(ds.id, sess.id, 0) or {}
+    version = current_version(sess)
+    meta = snapshots.read_meta(ds.id, sess.id, version) or snapshots.read_meta(ds.id, sess.id, 0) or {}
     return SessionOut(
         id=sess.id,
         dataset_id=ds.id,
@@ -59,7 +64,7 @@ def session_out(sess: AnalysisSession) -> SessionOut:
         column_names=meta.get("columns", []),
         header_changes=meta.get("header_changes", []),
         warnings=meta.get("warnings", []),
-        version=current_version(sess),
+        version=version,
         status=sess.status,
         created_at=sess.created_at,
         updated_at=sess.updated_at,
@@ -157,8 +162,16 @@ async def get_rows(
     df = await run_in_threadpool(snapshots.load, sess.dataset_id, sess.id, version)
     page = df.iloc[offset : offset + limit]
     rows = [[None if v is None else display_value(v) for v in row] for row in page.itertuples(index=False)]
+    # Spreadsheet row numbers of these rows (the index keeps each row's original position through cleaning).
+    row_numbers = [int(i) + sess.header_row + 2 for i in page.index]
     return RowsOut(
-        view=view, version=version, offset=offset, total=len(df), columns=[str(c) for c in df.columns], rows=rows
+        view=view,
+        version=version,
+        offset=offset,
+        total=len(df),
+        columns=[str(c) for c in df.columns],
+        rows=rows,
+        row_numbers=row_numbers,
     )
 
 
@@ -169,28 +182,44 @@ async def get_profile(
     sess = owned_session(db, ws, session_id)
     version = current_version(sess)
     vhash = version_hash(sess)
-    cached = db.scalars(
-        select(DataProfile).where(DataProfile.session_id == sess.id, DataProfile.version_hash == vhash)
-    ).first()
+
+    def lookup():
+        return db.scalars(
+            select(DataProfile).where(DataProfile.session_id == session_id, DataProfile.version_hash == vhash)
+        ).first()
+
+    cached = lookup()
     if cached is None:
-        _require_snapshot(sess, version)
-        dataset_id, sid = sess.dataset_id, sess.id
-        meta = snapshots.read_meta(dataset_id, sid, 0) or {}
-        ws_row = next((w for w in sess.dataset.worksheets if w.id == sess.worksheet_id), None)
-        context = {
-            "header_row": sess.header_row,
-            "header_changes": meta.get("header_changes", []),
-            "file_type": sess.dataset.file_type,
-            "formula_cells_without_cache": ws_row.formula_cells_without_cache if ws_row else 0,
-        }
-        db.rollback()  # no transaction held during the slow step
-        result = await run_in_threadpool(run_limited, profile_snapshot, dataset_id, sid, version, context)
-        cached = DataProfile(session_id=sid, version_hash=vhash, profile_json=result)
-        db.add(cached)
-        db.commit()
+        # Identical concurrent requests wait for the first computation instead of repeating it.
+        async with _profile_locks[(session_id, vhash)]:
+            db.rollback()
+            cached = lookup()
+            if cached is None:
+                cached = await _compute_profile(db, ws, session_id, version, vhash)
+        _profile_locks.pop((session_id, vhash), None)
         sess = owned_session(db, ws, session_id)
     final = finalize(cached.profile_json, sess.sensitive_columns_json or [], sess.date_rules_json or {})
     return {"session_id": session_id, "version": version, "calculated_at": cached.calculated_at.isoformat(), **final}
+
+
+async def _compute_profile(db: Session, ws: Workspace, session_id: str, version: int, vhash: str) -> DataProfile:
+    sess = owned_session(db, ws, session_id)
+    _require_snapshot(sess, version)
+    dataset_id, sid = sess.dataset_id, sess.id
+    meta = snapshots.read_meta(dataset_id, sid, 0) or {}
+    ws_row = next((w for w in sess.dataset.worksheets if w.id == sess.worksheet_id), None)
+    context = {
+        "header_row": sess.header_row,
+        "header_changes": meta.get("header_changes", []),
+        "file_type": sess.dataset.file_type,
+        "formula_cells_without_cache": ws_row.formula_cells_without_cache if ws_row else 0,
+    }
+    db.rollback()  # no transaction held during the slow step
+    result = await run_in_threadpool(run_limited, profile_snapshot, dataset_id, sid, version, context)
+    cached = DataProfile(session_id=sid, version_hash=vhash, profile_json=result)
+    db.add(cached)
+    db.commit()
+    return cached
 
 
 @router.put("/sessions/{session_id}/sensitive-columns")
