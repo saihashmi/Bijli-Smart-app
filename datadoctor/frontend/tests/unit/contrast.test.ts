@@ -29,7 +29,24 @@ const PAIRS: [string, string, number][] = [
   ["destructive-text", "card", 4.5],
   ["link", "background", 4.5],
   ["link", "card", 4.5],
+  ["cyan-text", "background", 4.5],
+  ["cyan-text", "card", 4.5],
+  ["violet-text", "background", 4.5],
+  ["violet-text", "card", 4.5],
+  ["teal-text", "card", 4.5],
+  ["foreground", "surface-2", 4.5],
+  ["muted-foreground", "surface-2", 4.5],
   ["ring", "background", 3],
+  ["ring", "card", 3],
+  // chart series must be distinguishable from the card they sit on (graphical objects: 3:1)
+  ["chart-1", "card", 3],
+  ["chart-2", "card", 3],
+  ["chart-3", "card", 3],
+  ["chart-4", "card", 3],
+  ["chart-5", "card", 3],
+  ["chart-6", "card", 3],
+  ["chart-7", "card", 3],
+  ["chart-8", "card", 3],
 ];
 
 describe("contrastRatio", () => {

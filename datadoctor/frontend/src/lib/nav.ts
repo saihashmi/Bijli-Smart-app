@@ -2,7 +2,7 @@ import {
   BarChart3,
   Bot,
   FileDown,
-  FolderKanban,
+  LayoutDashboard,
   HeartPulse,
   Settings,
   Upload,
@@ -21,7 +21,7 @@ export type NavItem = {
 };
 
 export const PRIMARY_NAV: NavItem[] = [
-  { label: "Workspace", href: "/workspace", icon: FolderKanban, milestone: 4 },
+  { label: "Overview", href: "/workspace", icon: LayoutDashboard, milestone: 4 },
   { label: "Upload Studio", href: "/upload", icon: Upload, milestone: 4 },
 ];
 

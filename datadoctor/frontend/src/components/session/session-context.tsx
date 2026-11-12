@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FolderOpen, RotateCw } from "lucide-react";
 import { api, ApiError, type AnalysisSession } from "@/lib/api";
 import { forgetSession, rememberSession } from "@/lib/last-session";
+import { setCurrentSession } from "@/lib/session-store";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,6 +39,10 @@ export function SessionProvider({ sessionId, children }: { sessionId: string; ch
       });
   }, [sessionId]);
   useEffect(reload, [reload]);
+  useEffect(() => {
+    setCurrentSession(session);
+    return () => setCurrentSession(null);
+  }, [session]);
 
   if (error)
     return (

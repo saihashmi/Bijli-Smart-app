@@ -1,20 +1,25 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Dark mode is class-based (a theme switch arrives in Milestone 2). */
+/* Dark mode is class-based (next-themes). The landing page forces dark with a .dark wrapper. */
 @custom-variant dark (&:is(.dark *));
 
-/* DataDoctor AI brand tokens, in the shadcn/ui variable convention.
-   Navy #0F172A · Electric Blue #2563EB · Teal #14B8A6 · Background #F8FAFC
-   Success #16A34A · Warning #F59E0B · Error #DC2626 */
+/* ============================================================================
+   DataDoctor AI design tokens (DESIGN_SPEC.md §4)
+   Light = "Executive Light" · Dark = "Midnight"
+   Brand colours are for fills, icons, glows and charts. Text uses the *-text
+   variants, which are checked for WCAG AA by tests/unit/contrast.test.ts.
+   ========================================================================== */
 :root {
-  --radius: 0.625rem;
+  --radius: 0.75rem;
+
   --background: #f8fafc;
   --foreground: #0f172a;
   --card: #ffffff;
   --card-foreground: #0f172a;
   --popover: #ffffff;
   --popover-foreground: #0f172a;
+  --surface-2: #f1f5f9;
   --primary: #2563eb;
   --primary-foreground: #ffffff;
   --secondary: #e6f7f5;
@@ -23,85 +28,127 @@
   --muted-foreground: #475569;
   --accent: #eef2ff;
   --accent-foreground: #1e3a8a;
+  --border: #e2e8f0;
+  --input: #cbd5e1;
+  --ring: #2563eb;
+
+  /* brand */
+  --brand: #3b82f6;
+  --cyan: #22d3ee;
+  --teal: #14b8a6;
+  --violet: #8b5cf6;
+  --navy: #0f172a;
   --destructive: #dc2626;
   --success: #16a34a;
   --warning: #f59e0b;
-  --teal: #14b8a6;
-  --navy: #0f172a;
-  /* Brand status colours (#16A34A, #F59E0B, #DC2626, #14B8A6) are for icons, fills and borders.
-     Text uses these darker variants so it meets WCAG AA (4.5:1). */
+
+  /* readable text variants */
+  --link: #2563eb;
   --success-text: #15803d;
   --warning-text: #b45309;
   --destructive-text: #b91c1c;
   --teal-text: #0f766e;
-  --link: #2563eb;
-  --border: #e2e8f0;
-  --input: #cbd5e1;
-  --ring: #2563eb;
+  --cyan-text: #0e7490;
+  --violet-text: #6d28d9;
+
+  /* charts: stable series order (blue, teal, violet, cyan, amber, rose, lime, slate) */
   --chart-1: #2563eb;
-  --chart-2: #14b8a6;
-  --chart-3: #f59e0b;
-  --chart-4: #8b5cf6;
-  --chart-5: #ec4899;
-  --sidebar: #0f172a;
-  --sidebar-foreground: #e2e8f0;
+  --chart-2: #0f766e;
+  --chart-3: #7c3aed;
+  --chart-4: #0891b2;
+  --chart-5: #b45309;
+  --chart-6: #be123c;
+  --chart-7: #4d7c0f;
+  --chart-8: #64748b;
+
+  /* navigation chrome stays navy in both themes */
+  --sidebar: #0b1222;
+  --sidebar-foreground: #cbd5e1;
   --sidebar-primary: #2563eb;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1e293b;
+  --sidebar-accent: #172033;
   --sidebar-accent-foreground: #f8fafc;
-  --sidebar-border: #1e293b;
-  --sidebar-ring: #3b82f6;
+  --sidebar-border: #1e2a44;
+  --sidebar-ring: #22d3ee;
+
+  /* elevation */
+  --shadow-1: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.08);
+  --shadow-2: 0 4px 12px rgb(15 23 42 / 0.08), 0 2px 4px rgb(15 23 42 / 0.06);
+  --shadow-3: 0 24px 64px rgb(15 23 42 / 0.18);
+  --glow: 0 0 0 1px rgb(59 130 246 / 0.25), 0 8px 32px rgb(59 130 246 / 0.18);
+
+  /* motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 150ms;
+  --dur: 200ms;
+  --dur-slow: 300ms;
 }
 
 .dark {
-  --background: #0b1120;
-  --foreground: #e2e8f0;
-  --card: #111a2e;
-  --card-foreground: #e2e8f0;
-  --popover: #111a2e;
-  --popover-foreground: #e2e8f0;
+  --background: #080d1b;
+  --foreground: #f8fafc;
+  --card: #172033;
+  --card-foreground: #f8fafc;
+  --popover: #172033;
+  --popover-foreground: #f8fafc;
+  --surface-2: #1e2a44;
   --primary: #2563eb;
   --primary-foreground: #ffffff;
-  --secondary: #123a37;
+  --secondary: #0f3a3a;
   --secondary-foreground: #99f6e4;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #1e293b;
+  --muted: #1e2a44;
+  --muted-foreground: #a3b1c6;
+  --accent: #1e2a44;
   --accent-foreground: #e2e8f0;
+  --border: #25324d;
+  --input: #33415c;
+  --ring: #22d3ee;
+
   --destructive: #ef4444;
   --success: #22c55e;
   --warning: #fbbf24;
-  --border: #1e293b;
-  --input: #334155;
-  --ring: #3b82f6;
-  --chart-1: #60a5fa;
-  --chart-2: #2dd4bf;
-  --chart-3: #fbbf24;
-  --chart-4: #a78bfa;
-  --chart-5: #f472b6;
+
+  --link: #60a5fa;
   --success-text: #4ade80;
   --warning-text: #fbbf24;
   --destructive-text: #f87171;
   --teal-text: #2dd4bf;
-  --link: #60a5fa;
-  --sidebar: #070b16;
-  --sidebar-foreground: #cbd5e1;
-  --sidebar-accent: #111a2e;
-  --sidebar-border: #111a2e;
+  --cyan-text: #22d3ee;
+  --violet-text: #a78bfa;
+
+  --chart-1: #3b82f6;
+  --chart-2: #14b8a6;
+  --chart-3: #8b5cf6;
+  --chart-4: #22d3ee;
+  --chart-5: #f59e0b;
+  --chart-6: #f43f5e;
+  --chart-7: #84cc16;
+  --chart-8: #94a3b8;
+
+  --sidebar: #060a15;
+  --sidebar-accent: #131c30;
+  --sidebar-border: #172033;
+
+  --shadow-1: 0 1px 2px rgb(2 6 23 / 0.5);
+  --shadow-2: 0 8px 24px rgb(2 6 23 / 0.45);
+  --shadow-3: 0 24px 64px rgb(2 6 23 / 0.6);
+  --glow: 0 0 0 1px rgb(59 130 246 / 0.35), 0 8px 40px rgb(59 130 246 / 0.25);
 }
 
 @theme inline {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --radius-sm: calc(var(--radius) - 4px);
+  --radius-sm: calc(var(--radius) - 6px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 2px);
+  --radius-2xl: calc(var(--radius) + 8px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+  --color-surface-2: var(--surface-2);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
@@ -113,13 +160,18 @@
   --color-destructive: var(--destructive);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-brand: var(--brand);
+  --color-cyan: var(--cyan);
   --color-teal: var(--teal);
+  --color-violet: var(--violet);
+  --color-navy: var(--navy);
   --color-success-text: var(--success-text);
   --color-warning-text: var(--warning-text);
   --color-destructive-text: var(--destructive-text);
   --color-teal-text: var(--teal-text);
+  --color-cyan-text: var(--cyan-text);
+  --color-violet-text: var(--violet-text);
   --color-link: var(--link);
-  --color-navy: var(--navy);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -128,6 +180,9 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -136,13 +191,82 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --shadow-xs: var(--shadow-1);
+  --shadow-sm: var(--shadow-1);
+  --shadow-md: var(--shadow-2);
+  --shadow-lg: var(--shadow-3);
+  --shadow-glow: var(--glow);
+  --ease-out-expo: var(--ease-out);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background font-sans text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--brand) 35%, transparent);
+  }
+}
+
+/* ---------- utilities ---------- */
+
+/* Restrained glass: navigation, dialogs, tooltips, landing cards only. Never behind tables or charts. */
+@utility glass {
+  background: color-mix(in srgb, var(--card) 72%, transparent);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+@utility text-gradient {
+  background: linear-gradient(135deg, #60a5fa 0%, #22d3ee 55%, #2dd4bf 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-brand-gradient {
+  background: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);
+}
+
+@utility bg-hero {
+  background:
+    radial-gradient(60rem 36rem at 85% -10%, rgb(59 130 246 / 0.18), transparent 60%),
+    radial-gradient(48rem 30rem at -10% 110%, rgb(139 92 246 / 0.14), transparent 60%),
+    #080d1b;
+}
+
+@utility hairline {
+  border: 1px solid rgb(148 163 184 / 0.15);
+}
+
+/* Animated gradient border (upload surface). Static under reduced motion. */
+@keyframes dd-border-spin {
+  to {
+    --dd-angle: 360deg;
+  }
+}
+@property --dd-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

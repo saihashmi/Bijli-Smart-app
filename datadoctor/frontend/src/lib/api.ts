@@ -14,12 +14,30 @@ export class ApiError extends Error {
 
 type Envelope = { error?: { code?: string; message?: string; id?: string } };
 
+// ---- live activity: how many API requests are in flight (drives the top-bar status indicator) ----
+let inFlight = 0;
+const activityListeners = new Set<() => void>();
+function bump(delta: number) {
+  inFlight = Math.max(0, inFlight + delta);
+  activityListeners.forEach((l) => l());
+}
+export const activity = {
+  subscribe(listener: () => void) {
+    activityListeners.add(listener);
+    return () => activityListeners.delete(listener);
+  },
+  get: () => inFlight,
+};
+
 export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   let res: Response;
+  bump(1);
   try {
     res = await fetch(`/api${path}`, { cache: "no-store", credentials: "same-origin", ...init });
   } catch {
     throw new ApiError(0, "NETWORK_ERROR", "Cannot reach the DataDoctor server. Is it running?");
+  } finally {
+    bump(-1);
   }
   if (!res.ok) {
     let body: Envelope = {};
@@ -338,6 +356,8 @@ export function uploadFile(
 ): Promise<Dataset> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    bump(1);
+    xhr.onloadend = () => bump(-1);
     xhr.open("POST", "/api/uploads");
     xhr.responseType = "json";
     xhr.upload.onprogress = (e) => {
