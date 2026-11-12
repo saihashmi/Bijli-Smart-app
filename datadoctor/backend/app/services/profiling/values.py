@@ -62,6 +62,13 @@ class ColumnValues:
     dates: pd.Series  # Timestamp for unambiguous dates (native or text), NaT otherwise
     date_formats: dict[str, int] = field(default_factory=dict)
     date_evidence: dict[str, int] = field(default_factory=dict)
+    date_ambiguous_by_format: dict[str, int] = field(default_factory=dict)
+    plain_numeric_text: int = 0  # numeric text with no formatting at all, e.g. "1250.5" (normal in CSV files)
+    edge_ws: pd.Series | None = None  # per-row: text with leading/trailing whitespace
+    repeated_ws: pd.Series | None = None  # per-row: text with repeated inner spaces
+    str_codes: np.ndarray | None = None  # factorize codes for string rows (aligned with str_index)
+    str_index: np.ndarray | None = None
+    str_uniques: np.ndarray | None = None
     whitespace_issues: int = 0  # text with leading/trailing whitespace
     repeated_spaces: int = 0
     has_time: bool = False
@@ -104,6 +111,7 @@ _DATE_C = re.compile(
 )
 _DATE_KEYS = list(DATE_PATTERNS.keys())
 _REPEATED_SPACE = re.compile(r"\S\s{2,}\S")
+_PLAIN_NUMBER = re.compile(r"-?\d+(?:\.\d+)?")
 _NATIVE_NUMBER_TYPES = (int, float, np.integer, np.floating)
 
 
@@ -146,7 +154,11 @@ def classify(series: pd.Series) -> ColumnValues:
     dates = pd.Series(pd.NaT, index=index, dtype="datetime64[ns]")
     date_formats: dict[str, int] = {}
     evidence = {"iso_or_named": 0, "dmy_only": 0, "mdy_only": 0, "ambiguous": 0, "same_either_way": 0, "invalid": 0}
-    whitespace_issues = repeated = 0
+    whitespace_issues = repeated = plain_numeric = 0
+    edge_mask = np.zeros(n, dtype=bool)
+    rep_mask = np.zeros(n, dtype=bool)
+    codes = uniques = None
+    ambiguous_by_format: dict[str, int] = {}
 
     # ---- non-string values (native cells from Excel) ----
     other_idx = np.flatnonzero(~is_str & ~is_none)
@@ -181,6 +193,9 @@ def classify(series: pd.Series) -> ColumnValues:
         classes[str_idx] = u_class[codes]
         whitespace_issues = int(counts[u_edge].sum())
         repeated = int(counts[u_rep].sum())
+        edge_mask[str_idx] = u_edge[codes]
+        rep_mask[str_idx] = u_rep[codes]
+        uniques = np.asarray(uniques, dtype=object)
 
         num_u = np.flatnonzero(u_class == "numeric_text")
         if len(num_u):
@@ -189,6 +204,8 @@ def classify(series: pd.Series) -> ColumnValues:
             u_num[num_u] = parsed
             mask = u_class[codes] == "numeric_text"
             numbers[str_idx[mask]] = u_num[codes[mask]]
+            u_plain = np.array([bool(_PLAIN_NUMBER.fullmatch(str(uniques[i]))) for i in num_u], dtype=bool)
+            plain_numeric = int(counts[num_u[u_plain]].sum())
 
         date_u = np.flatnonzero(u_class == "date_text")
         if len(date_u):
@@ -201,6 +218,10 @@ def classify(series: pd.Series) -> ColumnValues:
             _resolve_date_text(pd.Series(uniques[date_u], index=date_u, dtype=object).str.strip(), u_dates, u_ev)
             for k in evidence:
                 evidence[k] = int(counts[u_ev[k]].sum())
+            for key in date_formats:
+                c = int(counts[u_ev["ambiguous"] & (u_fmt == key)].sum())
+                if c:
+                    ambiguous_by_format[key] = c
             mask = u_class[codes] == "date_text"
             dates.iloc[str_idx[mask]] = u_dates.to_numpy()[codes[mask]]
 
@@ -223,8 +244,15 @@ def classify(series: pd.Series) -> ColumnValues:
         dates=dates,
         date_formats=date_formats,
         date_evidence=evidence if date_formats else {},
+        date_ambiguous_by_format=ambiguous_by_format,
+        plain_numeric_text=plain_numeric,
         whitespace_issues=whitespace_issues,
         repeated_spaces=repeated,
+        edge_ws=pd.Series(edge_mask, index=index),
+        repeated_ws=pd.Series(rep_mask, index=index),
+        str_codes=codes,
+        str_index=str_idx,
+        str_uniques=uniques,
         has_time=has_time,
     )
 

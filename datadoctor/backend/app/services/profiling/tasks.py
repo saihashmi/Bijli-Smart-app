@@ -7,7 +7,9 @@ from typing import Any
 from ..storage import snapshots
 from .profile import dataset_profile
 
+PROFILE_SCHEMA = "3"  # bump when the shape of stored profiles changes, so old cached profiles are recomputed
 
-def profile_snapshot(dataset_id: str, session_id: str, version: int) -> dict[str, Any]:
+
+def profile_snapshot(dataset_id: str, session_id: str, version: int, context: dict[str, Any] | None = None) -> dict:
     df = snapshots.load(dataset_id, session_id, version)
-    return dataset_profile(df)
+    return dataset_profile(df, context=context)

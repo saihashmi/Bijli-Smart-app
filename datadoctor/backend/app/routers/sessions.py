@@ -15,11 +15,12 @@ from ..db import get_db
 from ..errors import AppError
 from ..middleware.ratelimit import rate_limit
 from ..middleware.workspace import current_workspace, owned_dataset, owned_session
-from ..models import AnalysisSession, DataProfile, Dataset, Workspace, new_id
-from ..schemas.datasets import RowsOut, SessionCreate, SessionOut
+from ..models import AnalysisSession, AuditEvent, DataProfile, Dataset, Workspace, new_id
+from ..schemas.datasets import RowsOut, SensitiveColumnsIn, SessionCreate, SessionOut
 from ..services.ingest.parse import parse_to_snapshot
 from ..services.ingest.workbook import display_value
-from ..services.profiling.tasks import profile_snapshot
+from ..services.profiling.health import finalize
+from ..services.profiling.tasks import PROFILE_SCHEMA, profile_snapshot
 from ..services.storage import snapshots
 from ..services.storage.paths import remove
 from ..worker import run_limited
@@ -37,7 +38,7 @@ def current_version(sess: AnalysisSession) -> int:
 
 def version_hash(sess: AnalysisSession) -> str:
     active = [op.id for op in sess.operations if op.status == "active"]
-    return hashlib.sha256(json.dumps(active).encode()).hexdigest()
+    return hashlib.sha256(json.dumps([PROFILE_SCHEMA, active]).encode()).hexdigest()
 
 
 def session_out(sess: AnalysisSession) -> SessionOut:
@@ -174,14 +175,47 @@ async def get_profile(
     if cached is None:
         _require_snapshot(sess, version)
         dataset_id, sid = sess.dataset_id, sess.id
+        meta = snapshots.read_meta(dataset_id, sid, 0) or {}
+        ws_row = next((w for w in sess.dataset.worksheets if w.id == sess.worksheet_id), None)
+        context = {
+            "header_row": sess.header_row,
+            "header_changes": meta.get("header_changes", []),
+            "file_type": sess.dataset.file_type,
+            "formula_cells_without_cache": ws_row.formula_cells_without_cache if ws_row else 0,
+        }
         db.rollback()  # no transaction held during the slow step
-        result = await run_in_threadpool(run_limited, profile_snapshot, dataset_id, sid, version)
+        result = await run_in_threadpool(run_limited, profile_snapshot, dataset_id, sid, version, context)
         cached = DataProfile(session_id=sid, version_hash=vhash, profile_json=result)
         db.add(cached)
         db.commit()
-    return {
-        "session_id": sess.id,
-        "version": version,
-        "calculated_at": cached.calculated_at.isoformat(),
-        **cached.profile_json,
-    }
+        sess = owned_session(db, ws, session_id)
+    final = finalize(cached.profile_json, sess.sensitive_columns_json or [], sess.date_rules_json or {})
+    return {"session_id": session_id, "version": version, "calculated_at": cached.calculated_at.isoformat(), **final}
+
+
+@router.put("/sessions/{session_id}/sensitive-columns")
+def set_sensitive_columns(
+    session_id: str, body: SensitiveColumnsIn, ws: Workspace = Depends(current_workspace), db: Session = Depends(get_db)
+) -> dict[str, list[str]]:
+    sess = owned_session(db, ws, session_id)
+    meta = snapshots.read_meta(sess.dataset_id, sess.id, 0) or {}
+    known = set(meta.get("columns", []))
+    unknown = [c for c in body.columns if c not in known]
+    if unknown:
+        raise AppError(422, "UNKNOWN_COLUMN", f"Unknown column(s): {', '.join(unknown[:5])}")
+    ordered = [c for c in meta.get("columns", []) if c in set(body.columns)]
+    before = sess.sensitive_columns_json or []
+    if ordered != before:
+        sess.sensitive_columns_json = ordered
+        db.add(
+            AuditEvent(
+                session_id=sess.id,
+                event_type="sensitive_columns",
+                details_json={
+                    "added": [c for c in ordered if c not in before],
+                    "removed": [c for c in before if c not in ordered],
+                },
+            )
+        )
+        db.commit()
+    return {"sensitive_columns": ordered}

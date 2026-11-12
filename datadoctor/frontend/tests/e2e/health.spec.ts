@@ -17,6 +17,7 @@ test("profiles every column with exact counts", async ({ page }, info) => {
   await openSession(page, "invoices_quality.xlsx");
   const kpis = page.getByTestId("health-kpis");
   await expect(kpis).toContainText("8 columns");
+  await expect(page.getByTestId("issue-kpi")).toContainText(/\d+ high · \d+ medium · \d+ low/);
   await expect(kpis).toContainText("Exact duplicate rows1");
   await expect(kpis).toContainText("1 completely empty row");
 
@@ -25,6 +26,7 @@ test("profiles every column with exact counts", async ({ page }, info) => {
   await expect(page.getByText("duplicate header “Amount” renamed “Amount (2)”")).toBeVisible();
   await expect(page.getByText(/1 cell\(s\) contain Excel errors/)).toBeVisible();
 
+  await page.getByRole("tab", { name: "Column profiles" }).click();
   const cards = page.getByTestId("column-card");
   await expect(cards).toHaveCount(8);
   const date = cards.filter({ hasText: /^Date/ });
@@ -38,6 +40,60 @@ test("profiles every column with exact counts", async ({ page }, info) => {
 
   await page.getByLabel("Filter columns").fill("city");
   await expect(cards).toHaveCount(1);
+});
+
+test("health score and issue list", async ({ page }, info) => {
+  await openSession(page, "invoices_quality.xlsx");
+  const score = page.getByTestId("score-card");
+  await expect(page.getByTestId("health-score")).toHaveText(/^\d{1,3}$/);
+  await expect(score).toContainText("Completeness");
+  await expect(score).toContainText("Format consistency");
+  await score.getByText("How is this calculated?").click();
+  await expect(score).toContainText("0.35 × Completeness");
+  await expect(score).toContainText("does not check whether values are true");
+
+  await expect(page.getByTestId("missing-chart")).toContainText("Notes");
+  const issues = page.getByTestId("issue");
+  await expect(issues.first()).toContainText("High");
+  await expect(issues.filter({ hasText: "Ambiguous dates" })).toContainText("could mean 3 April or 4 March");
+  await expect(issues.filter({ hasText: "Exact duplicate rows" })).toContainText("Row");
+  await expect(issues.filter({ hasText: "Inconsistent category labels" })).toContainText("“Lahore” (1)");
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/issues-${info.project.name}.png`, fullPage: true });
+
+  const total = await issues.count();
+  await page.getByRole("radio", { name: /^High/ }).click();
+  const high = await issues.count();
+  expect(high).toBeGreaterThan(0);
+  expect(high).toBeLessThan(total);
+  for (const badge of await issues.locator("[data-slot=badge]").first().allTextContents()) expect(badge).toBe("High");
+  await page.getByRole("radio", { name: /^All/ }).click();
+  await page.getByLabel("Filter by column").selectOption("Date");
+  await expect(issues.filter({ hasText: "Exact duplicate rows" })).toHaveCount(0);
+  await expect(issues.filter({ hasText: "Invalid dates" })).toHaveCount(1);
+});
+
+test("personal information is flagged and can be marked sensitive", async ({ page }) => {
+  const csv = "Customer Name,CNIC,Amount\nAyesha,35202-1234567-1,100\nBilal,42101-7654321-3,200\nSana,61101-1111111-5,300\n";
+  await page.goto("/upload");
+  await page.getByTestId("file-input").setInputFiles({ name: "people.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
+  await expect(page.getByTestId("raw-preview")).toBeVisible();
+  await page.getByRole("button", { name: "Start analysis" }).click();
+  const pii = page.getByTestId("issue").filter({ hasText: "Possible personal information" });
+  await expect(pii).toHaveCount(2);
+  await expect(pii.filter({ hasText: "CNIC" })).not.toContainText("1234567"); // examples are masked
+  await pii.filter({ hasText: "CNIC" }).getByRole("button", { name: "Mark as sensitive" }).click();
+  await expect(page.getByText("“CNIC” marked as sensitive")).toBeVisible();
+  await expect(pii).toHaveCount(1);
+
+  await page.getByRole("tab", { name: "Column profiles" }).click();
+  await expect(page.getByRole("button", { name: "Sensitive column CNIC" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Not sensitive column Customer Name" }).click();
+  await expect(page.getByRole("button", { name: "Sensitive column Customer Name" })).toHaveAttribute("aria-pressed", "true");
+  await page.reload();
+  await page.getByRole("tab", { name: "Column profiles" }).click();
+  await expect(page.getByRole("button", { name: "Sensitive column Customer Name" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("tab", { name: /Issues/ }).click();
+  await expect(page.getByTestId("issue").filter({ hasText: "Possible personal information" })).toHaveCount(0);
 });
 
 test("data preview loads pages while scrolling", async ({ page }, info) => {

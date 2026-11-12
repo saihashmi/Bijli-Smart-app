@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { CheckCircle2, CircleAlert, Loader2 } from "lucide-react";
-import { api, ApiError, type Health } from "@/lib/api";
+import { api, ApiError, type ServerHealth } from "@/lib/api";
 
-type State = { kind: "loading" } | { kind: "ok"; health: Health } | { kind: "error"; message: string };
+type State = { kind: "loading" } | { kind: "ok"; health: ServerHealth } | { kind: "error"; message: string };
 
 /** Live check against /api/health. Nothing here is simulated. */
 export function BackendStatus() {

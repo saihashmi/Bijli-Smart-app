@@ -3,6 +3,9 @@ import { defineConfig, devices } from "@playwright/test";
 // Expects the backend on :8000 and the frontend on :3000 (see CLAUDE.md "Commands").
 export default defineConfig({
   testDir: "tests/e2e",
+  // The suite runs uploads, profiling worker processes and a 19 MB upload in parallel against one local server;
+  // under that load some responses take longer than Playwright's 5 s default.
+  expect: { timeout: 10_000 },
   use: { baseURL: process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000", trace: "off" },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } } },

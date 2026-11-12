@@ -1,5 +1,6 @@
 "use client";
 
+import { Loader2, ShieldCheck, ShieldOff } from "lucide-react";
 import type { ColumnProfile } from "@/lib/api";
 import { formatInteger } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -64,7 +65,17 @@ function TopValues({ values, other }: { values: { value: string; count: number; 
   );
 }
 
-export function ColumnCard({ col }: { col: ColumnProfile }) {
+export function ColumnCard({
+  col,
+  sensitive,
+  busy,
+  onToggleSensitive,
+}: {
+  col: ColumnProfile;
+  sensitive: boolean;
+  busy: boolean;
+  onToggleSensitive: () => void;
+}) {
   const notes: string[] = [];
   if (col.mixed && col.consistency !== null)
     notes.push(`${Math.round(col.consistency * 100)}% of values match the column type`);
@@ -84,6 +95,21 @@ export function ColumnCard({ col }: { col: ColumnProfile }) {
           <CardTitle className="text-sm break-all">{col.name}</CardTitle>
           <TypeLabel type={col.type} mixed={col.mixed} />
         </div>
+        <button
+          type="button"
+          aria-pressed={sensitive}
+          onClick={onToggleSensitive}
+          disabled={busy}
+          className={cn(
+            "inline-flex w-fit cursor-pointer items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60",
+            sensitive ? "border-primary/40 bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted",
+          )}
+          title={sensitive ? "Sensitive: never sent to AI features. Click to unmark." : "Mark as sensitive to keep it away from AI features"}
+        >
+          {busy ? <Loader2 className="size-3 animate-spin" /> : sensitive ? <ShieldCheck className="size-3" /> : <ShieldOff className="size-3" />}
+          {sensitive ? "Sensitive" : "Not sensitive"}
+          <span className="sr-only"> column {col.name}</span>
+        </button>
       </CardHeader>
       <CardContent className="space-y-3 px-4 text-sm">
         <dl className="grid grid-cols-3 gap-2">

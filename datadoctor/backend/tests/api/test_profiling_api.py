@@ -104,3 +104,65 @@ def test_other_workspaces_cannot_read_rows_or_profile(client, other_client, path
     sess = _session(client, fx.profiling_workbook())
     other_client.get("/api/settings")
     assert other_client.get(f"/api/sessions/{sess['id']}/{path}").status_code == 404
+
+
+def test_issue_list_for_known_workbook(client):
+    sess = _session(client, fx.profiling_workbook())
+    p = client.get(f"/api/sessions/{sess['id']}/profile").json()
+    got = {(i["code"], i["column"]): i for i in p["issues"]}
+    expected = {
+        ("Q01", None): (1, "high"),
+        ("Q04", None): (1, "low"),
+        ("Q04", "Column 6"): (8, "low"),
+        ("Q14", "Column 6"): (8, "low"),
+        ("Q14", "Amount (2)"): (8, "low"),
+        ("Q03", "Amount"): (5, "high"),
+        ("Q03", "Notes"): (7, "high"),
+        ("Q03", "City"): (1, "medium"),
+        ("Q05", "City"): (1, "medium"),
+        ("Q07", "City"): (2, "medium"),
+        ("Q08", "Amount"): (2, "medium"),
+        ("Q10", "Date"): (4, "medium"),
+        ("Q11", "Date"): (1, "high"),
+        ("Q12", "Date"): (1, "medium"),
+    }
+    for key, (affected, severity) in expected.items():
+        assert key in got, key
+        assert (got[key]["affected_rows"], got[key]["severity"]) == (affected, severity), key
+    assert not any(code == "Q16" for code, _ in got)
+    assert p["issue_counts"]["high"] == sum(1 for i in p["issues"] if i["severity"] == "high")
+    assert p["issues"][0]["severity"] == "high"  # sorted by severity
+    h = p["health"]
+    assert 0 <= h["score"] <= 100 and h["band"] in {"Excellent", "Good", "Needs attention", "Poor"}
+    assert sum(c["points"] for c in h["components"]) == pytest.approx(h["score"], abs=0.5)
+
+
+def test_mark_sensitive_columns(client):
+    data = fx.csv_bytes(
+        rows=[
+            ["Name", "CNIC", "Amount"],
+            ["Ayesha", "35202-1234567-1", "10"],
+            ["Bilal", "42101-7654321-3", "20"],
+            ["Sana", "61101-1111111-5", "30"],
+        ]
+    )
+    sess = _session(client, data, "people.csv")
+    p = client.get(f"/api/sessions/{sess['id']}/profile").json()
+    assert {i["column"] for i in p["issues"] if i["code"] == "Q16"} == {"Name", "CNIC"}
+    res = client.put(f"/api/sessions/{sess['id']}/sensitive-columns", json={"columns": ["CNIC", "Name"]})
+    assert res.json() == {"sensitive_columns": ["Name", "CNIC"]}  # stored in sheet order
+    p = client.get(f"/api/sessions/{sess['id']}/profile").json()
+    assert not any(i["code"] == "Q16" for i in p["issues"])
+    assert p["sensitive_columns"] == ["Name", "CNIC"]
+    bad = client.put(f"/api/sessions/{sess['id']}/sensitive-columns", json={"columns": ["Nope"]})
+    assert bad.status_code == 422 and bad.json()["error"]["code"] == "UNKNOWN_COLUMN"
+
+    from sqlalchemy import select
+
+    from app.db import SessionLocal
+    from app.models import AuditEvent
+
+    with SessionLocal() as db:
+        events = db.scalars(select(AuditEvent).where(AuditEvent.session_id == sess["id"])).all()
+    assert [e.event_type for e in events] == ["sensitive_columns"]
+    assert events[0].details_json == {"added": ["Name", "CNIC"], "removed": []}

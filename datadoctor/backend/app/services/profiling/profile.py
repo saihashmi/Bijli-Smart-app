@@ -173,7 +173,9 @@ def _column_profile(name: str, series: pd.Series, cv: ColumnValues, today: datet
     return prof
 
 
-def dataset_profile(df: pd.DataFrame, today: datetime | None = None) -> dict[str, Any]:
+def dataset_profile(
+    df: pd.DataFrame, today: datetime | None = None, context: dict[str, Any] | None = None
+) -> dict[str, Any]:
     rows, cols = df.shape
     classified = {c: classify(df[c]) for c in df.columns}
     columns = [_column_profile(str(c), df[c], classified[c], today) for c in df.columns]
@@ -185,7 +187,11 @@ def dataset_profile(df: pd.DataFrame, today: datetime | None = None) -> dict[str
         empty_rows = int(missing_matrix.all(axis=1).sum()) if missing_matrix is not None else 0
     else:
         duplicate_rows = empty_rows = 0
+    from .issues import detect
+
+    issues = detect(df, classified, columns, context or {})
     return {
+        "issues": issues,
         "rows": rows,
         "columns": cols,
         "total_cells": total_cells,

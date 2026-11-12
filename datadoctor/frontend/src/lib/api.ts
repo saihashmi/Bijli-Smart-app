@@ -70,7 +70,7 @@ export type SystemInfo = {
 
 export type SettingsResponse = { preferences: Preferences; system: SystemInfo };
 
-export type Health = {
+export type ServerHealth = {
   status: "ok" | "degraded";
   version: string;
   ai_configured: boolean;
@@ -177,6 +177,32 @@ export type ColumnProfile = {
   top_values_other?: number;
 };
 
+export type Severity = "high" | "medium" | "low";
+
+export type Issue = {
+  id: string;
+  code: string;
+  title: string;
+  column: string | null;
+  affected_rows: number;
+  affected_pct: number;
+  severity: Severity;
+  description: string;
+  examples: { row: number | null; value: string }[];
+  suggested_action: { operation: string | null; label: string };
+  details: Record<string, unknown>;
+};
+
+export type HealthComponent = { key: string; value: number; weight: number; points: number; explanation: string };
+
+export type Health = {
+  score: number;
+  band: "Excellent" | "Good" | "Needs attention" | "Poor";
+  components: HealthComponent[];
+  formula: string;
+  limitations: string[];
+};
+
 export type Profile = {
   session_id: string;
   version: number;
@@ -190,6 +216,10 @@ export type Profile = {
   empty_rows: number;
   empty_columns: number;
   column_profiles: ColumnProfile[];
+  issues: Issue[];
+  issue_counts: Record<Severity, number>;
+  health: Health | null;
+  sensitive_columns: string[];
 };
 
 /** Upload with real progress events (fetch has no upload progress). Resolves with the created dataset. */
@@ -228,7 +258,7 @@ export function uploadFile(
 
 // ---------- endpoints ----------
 export const api = {
-  health: () => request<Health>("/health"),
+  health: () => request<ServerHealth>("/health"),
   settings: () => request<SettingsResponse>("/settings"),
   updateSettings: (patch: Partial<Preferences>) => request<SettingsResponse>("/settings", json("PUT", patch)),
   deleteAllData: () => request<{ datasets_deleted: number }>("/workspace/data", { method: "DELETE" }),
@@ -243,5 +273,7 @@ export const api = {
   rows: (id: string, offset: number, limit: number, view: "current" | "original" = "current") =>
     request<RowsPage>(`/sessions/${id}/rows?view=${view}&offset=${offset}&limit=${limit}`),
   profile: (id: string) => request<Profile>(`/sessions/${id}/profile`),
+  setSensitive: (id: string, columns: string[]) =>
+    request<{ sensitive_columns: string[] }>(`/sessions/${id}/sensitive-columns`, json("PUT", { columns })),
   deleteSession: (id: string) => request<void>(`/sessions/${id}`, { method: "DELETE" }),
 };

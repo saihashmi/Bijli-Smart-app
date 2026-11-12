@@ -96,3 +96,7 @@ class RowsOut(BaseModel):
     total: int
     columns: list[str]
     rows: list[list[str | None]]
+
+
+class SensitiveColumnsIn(BaseModel):
+    columns: list[str] = Field(max_length=500)
