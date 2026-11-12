@@ -1,0 +1,77 @@
+from __future__ import annotations
+
+from datetime import datetime
+
+from pydantic import BaseModel, Field
+
+
+class SheetOut(BaseModel):
+    index: int
+    name: str
+    visibility: str
+    rows: int
+    columns: int
+    formula_cells_without_cache: int
+    kind: str = "worksheet"
+    selectable: bool
+    problem: str | None = None
+
+
+class CsvInfo(BaseModel):
+    encoding: str
+    delimiter: str
+    delimiter_label: str
+    replaced_characters: int
+
+
+class SessionBrief(BaseModel):
+    id: str
+    sheet_index: int | None
+    sheet_name: str | None
+    header_row: int
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class DatasetOut(BaseModel):
+    id: str
+    original_filename: str
+    file_type: str
+    file_size: int
+    uploaded_at: datetime
+    expires_at: datetime
+    status: str
+    sheets: list[SheetOut]
+    csv: CsvInfo | None = None
+    warnings: list[str] = []
+    sessions: list[SessionBrief] = []
+
+
+class PeekOut(BaseModel):
+    sheet_index: int
+    rows: list[list[str]]
+    total_rows: int
+    total_columns: int
+    truncated_columns: bool
+
+
+class SessionCreate(BaseModel):
+    sheet_index: int = Field(ge=0)
+    header_row: int = Field(default=0, ge=0, le=50, description="0-based row number holding the column names")
+
+
+class SessionOut(BaseModel):
+    id: str
+    dataset_id: str
+    original_filename: str
+    file_type: str
+    sheet_index: int | None
+    sheet_name: str | None
+    header_row: int
+    rows: int | None
+    columns: int | None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    expires_at: datetime

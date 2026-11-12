@@ -32,6 +32,9 @@ class Settings:
     max_rows: int = field(default_factory=lambda: int(_env("MAX_ROWS", "1000000")))
     max_columns: int = field(default_factory=lambda: int(_env("MAX_COLUMNS", "500")))
     max_cells: int = field(default_factory=lambda: int(_env("MAX_CELLS", "20000000")))
+    # Zip-bomb guards for .xlsx (an xlsx is a zip archive)
+    max_uncompressed_mb: int = field(default_factory=lambda: int(_env("MAX_UNCOMPRESSED_MB", "300")))
+    max_zip_entries: int = field(default_factory=lambda: int(_env("MAX_ZIP_ENTRIES", "10000")))
     # Display
     display_timezone: str = field(default_factory=lambda: _env("DISPLAY_TIMEZONE", "Asia/Karachi"))
     # Security

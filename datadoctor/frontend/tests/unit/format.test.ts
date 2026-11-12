@@ -30,3 +30,23 @@ describe("helpers", () => {
     expect(timeZoneOptions("Etc/Custom")[0]).toBe("Etc/Custom");
   });
 });
+
+import { columnLetter, formatBytes, precheckFile } from "@/lib/format";
+
+describe("upload helpers", () => {
+  it("formats sizes", () => {
+    expect(formatBytes(512)).toBe("512 B");
+    expect(formatBytes(2048)).toBe("2.0 KB");
+    expect(formatBytes(20 * 1024 * 1024)).toBe("20.0 MB");
+  });
+  it("produces Excel column letters", () => {
+    expect([0, 25, 26, 27, 701, 702].map(columnLetter)).toEqual(["A", "Z", "AA", "AB", "ZZ", "AAA"]);
+  });
+  it("pre-checks extension, emptiness and size", () => {
+    expect(precheckFile({ name: "a.XLSX", size: 10 }, 20)).toBeNull();
+    expect(precheckFile({ name: "a.pdf", size: 10 }, 20)).toMatch(/Unsupported/);
+    expect(precheckFile({ name: "noext", size: 10 }, 20)).toMatch(/Unsupported/);
+    expect(precheckFile({ name: "a.csv", size: 0 }, 20)).toMatch(/empty/);
+    expect(precheckFile({ name: "a.csv", size: 21 * 1024 * 1024 }, 20)).toMatch(/20 MB/);
+  });
+});

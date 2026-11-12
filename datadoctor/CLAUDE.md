@@ -4,7 +4,7 @@ Read this first when continuing work. Source of truth: `SPEC.md` (approved) and 
 
 ## Status
 - Phase: **03 BUILD**. SPEC and PLAN approved 2026-11-12.
-- Current milestone: **M3 complete, awaiting approval**. Next: M4 (file upload, validation, worksheet selection).
+- Current milestone: **M4 complete, awaiting approval**. Next: M5 (spreadsheet preview and profiling).
 - Branch: `ccr-47143d17-8h5n17`. Push with `git push -u origin ccr-47143d17-8h5n17`.
 
 ## Workflow rules (from the product owner)
@@ -42,6 +42,15 @@ Read this first when continuing work. Source of truth: `SPEC.md` (approved) and 
 | Migrations run automatically at startup (`app/migrate.py`). Alembic `render_as_batch` for SQLite. `0001_initial_schema` = SPEC §8. | `tests/unit/test_migrations.py` fails if models drift from migrations |
 | Rate limits: in-memory token buckets in `middleware/ratelimit.py` (`upload`, `profile`, `clean`, `query`, `export`, `ai`, `destructive`), keyed by workspace | Single process only. Documented as an MVP limitation. |
 | Storage: `services/storage/paths.py::safe_path(area, *parts)`. Areas: originals, snapshots (`snapshots/<dataset_id>/…`), exports. Names must match `[A-Za-z0-9][A-Za-z0-9._-]{0,127}`. | Path-traversal proof by construction |
+| Upload pipeline: stream to `originals/<id>.part` (sha256 + size) → `check_content` (magic bytes decide the type, not the extension; zip-bomb and entry-count guard; encrypted OOXML detected via olefile) → rename to `<id>.<xlsx/xls/csv>` → discovery. Any failure deletes the files. | `services/ingest/` |
+| `UploadSizeLimitMiddleware` rejects over-limit uploads by Content-Length or by counting bytes, and **drains** up to 64 MB first so proxies get a clean 413 | Without draining, Next.js reported 500 |
+| Next.js proxy: `experimental.middlewareClientMaxBodySize = MAX_UPLOAD_MB+5 mb`, `proxyTimeout 120 s` | **Next silently truncated bodies over 10 MB** (found by the 19.5 MB benchmark). Regression test in `upload.spec.ts`. |
+| Excel discovery uses calamine (sheet names, visibility, dimensions). Formulas without a cached value are counted by a streaming regex scan of the sheet XML (`workbook._count_uncached_formulas`) | Was 11.75 s with an XML parser on 200k rows, now 1.3 s. Chunks split only after a closing `</c>` tag (a bug with `/>` was caught by a test). |
+| Chart sheets are not stored as Worksheet rows (no table data); upload returns a warning instead | Approved schema has no sheet-kind column |
+| CSV: encoding = BOM → strict UTF-8 → charset-normalizer (undecodable chars counted, never silent); delimiter via csv.Sniffer over `, ; tab |`, then a consistency fallback. Format is re-detected deterministically when needed (not stored). | |
+| Analysis session = dataset + worksheet + header_row (0-based). Peek returns raw display strings (`workbook.display_value`), never converted. | Header-row picker needs raw rows |
+| Retention: `retention_loop` runs at startup and hourly. Expired datasets → files deleted, status `deleted`, sessions `expired`. | SPEC D3 |
+| SQLite drops tzinfo: `models.UTCDateTime` always returns aware UTC | Frontend formats in the workspace time zone |
 | Preferences (time zone, date display, AI column-name sharing) live in `workspaces.settings_json`. Theme stays in the browser. Settings auto-save per control with a toast. | |
 
 ## Commands
@@ -64,6 +73,10 @@ Versions: Python 3.12+ (dev box runs 3.13), Node 20+ (dev box runs 22). Dependen
 See PLAN.md §2 and §6.
 
 ## Known issues
+- Excel sheets are fully loaded twice per upload (discovery dimensions + first-rows peek), about 1.8 s each on 200k×10. M5 should cache the parsed sheet.
+- `next start` prints a warning because `output: "standalone"` is set. It works. Docker (M16) will use `node .next/standalone/server.js`.
+- A real password-protected **.xls** could not be produced in this environment (LibreOffice ignored the password option). That path is tested by simulating calamine's `PasswordError`. Encrypted **.xlsx** is tested with a real encrypted file.
+- The rate-limit key before a workspace cookie exists is the client address, which is shared by everyone behind the Next proxy. Harmless: pages fetch /api/settings first, which issues the cookie.
 - CSRF: relies on SameSite=Lax + same-origin proxy; acceptable for local mode. Revisit with real auth before any public deployment.
 - Pytest warning: Starlette's TestClient warns that `httpx` usage is deprecated (suggests `httpx2`). Harmless. Revisit when upgrading.
 - `/api/docs` (Swagger UI) loads its JS/CSS from a CDN, so it needs internet. The API itself does not.
@@ -74,9 +87,10 @@ See PLAN.md §2 and §6.
 
 - **M2. Frontend shell, branding, navigation** (2026-11-12): theme switch (light/dark/system) + WCAG contrast test over all tokens (43 pairs); AppShell with navy sidebar (desktop), slide-out drawer (mobile/tablet), Local-mode badge, skip link; landing page (hero, how it works, features, privacy, CTA; illustration labelled as such, no statistics); Workspace / Upload placeholders, Settings with working theme + live backend/AI status. Tests: vitest 44, Playwright 15 (5 specs × 3 sizes), all passing.
 - **M3. Backend setup, database, health checks** (2026-11-12): config, error envelope, SQLAlchemy models + Alembic `0001_initial_schema` (10 tables, exactly SPEC §8), auto-migrate on startup, server secret (env or generated 0600 file), signed workspace cookie + ownership helpers, rate limiter, safe storage paths, `/api/health` (DB + storage checks, 503 when degraded), `GET/PUT /api/settings`, `DELETE /api/workspace/data`. Frontend: typed API client with error envelope, working Settings page (time zone, date format with live preview, AI column-name switch, limits, delete-all with confirmation, toasts). Bug found by tests and fixed: invalid time zone in PUT returned 500 instead of 422. Tests: pytest 33, vitest 49, Playwright 24.
+- **M4. File upload, validation and worksheet selection** (2026-11-12): streamed upload with real XHR progress and cancel; content-based type detection; empty, corrupted, wrong-content, password-protected, zip-bomb and oversized handling; macro and wrong-extension warnings; filename sanitising; sheet discovery (hidden / very hidden, dimensions, formula cells without cached values, limit checks); CSV encoding/delimiter detection incl. UTF-16, cp1252, quoted newlines; raw first-rows peek with header-row picker; analysis-session creation; Workspace list with resume and delete; retention cleanup. Found and fixed: Next.js 10 MB proxy truncation, 500 instead of 413 through the proxy, upload warnings lost on URL change, slow formula scan, chunk-boundary bug in the new scan. Tests: pytest 84, vitest 52, Playwright 51. Benchmarks (this container): 19.5 MB CSV / 311,759 rows in 0.8 s; 12.2 MB xlsx / 200,001×10 in 5.8 s (upload → preview, measured in the browser).
 
 ## Pending
-- Product-owner approval of M3, then M4: streamed upload with size limit and safe storage, magic-byte/zip-bomb/encryption checks, sheet discovery (names, visibility, formula cache scan), CSV encoding/delimiter detection, Upload Studio UI with real progress and sheet picker, Workspace session list.
+- Product-owner approval of M4, then M5: worker process with timeout and memory cap; parse the chosen sheet with header row into a snapshot (v0) once; paged rows endpoint + virtualised grid; type inference; column statistics; session pages under `/s/[id]/…` and enabling the session nav.
 - Later (landing page): a genuine "Try with sample data" demo once upload works (M4) and sample datasets exist (M14).
 
 ## How to continue

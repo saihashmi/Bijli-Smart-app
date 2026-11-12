@@ -6,7 +6,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text, TypeDecorator, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -20,8 +20,25 @@ def utcnow() -> datetime:
     return datetime.now(UTC)
 
 
+class UTCDateTime(TypeDecorator):
+    """Stores UTC; always returns timezone-aware UTC datetimes (SQLite drops tzinfo on its own)."""
+
+    impl = DateTime(timezone=True)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is not None and value.tzinfo is None:
+            value = value.replace(tzinfo=UTC)
+        return value.astimezone(UTC) if value is not None else None
+
+    def process_result_value(self, value, dialect):
+        if value is not None and value.tzinfo is None:
+            value = value.replace(tzinfo=UTC)
+        return value
+
+
 UUID = String(36)
-TS = DateTime(timezone=True)
+TS = UTCDateTime()
 
 
 class Workspace(Base):

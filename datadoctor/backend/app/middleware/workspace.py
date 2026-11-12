@@ -45,8 +45,7 @@ def current_workspace(request: Request, response: Response, db: Session = Depend
         _set_cookie(response, ws.id)
     else:
         now = utcnow()
-        last = ws.last_seen_at if ws.last_seen_at.tzinfo else ws.last_seen_at.replace(tzinfo=now.tzinfo)
-        if now - last > _TOUCH_INTERVAL:
+        if now - ws.last_seen_at > _TOUCH_INTERVAL:
             ws.last_seen_at = now
             db.commit()
     return ws

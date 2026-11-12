@@ -29,3 +29,32 @@ export function timeZoneOptions(current?: string): string[] {
   const zones = typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : ["Asia/Karachi", "UTC"];
   return current && !zones.includes(current) ? [current, ...zones] : zones;
 }
+
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/** Spreadsheet-style column letters: 0 → A, 25 → Z, 26 → AA. */
+export function columnLetter(index: number): string {
+  let n = index + 1;
+  let out = "";
+  while (n > 0) {
+    const r = (n - 1) % 26;
+    out = String.fromCharCode(65 + r) + out;
+    n = Math.floor((n - 1) / 26);
+  }
+  return out;
+}
+
+export const ACCEPTED_EXTENSIONS = [".xlsx", ".xlsm", ".xls", ".csv", ".txt"];
+
+/** Client-side pre-check (the server re-validates everything). Returns an error message or null. */
+export function precheckFile(file: { name: string; size: number }, maxMb: number): string | null {
+  const ext = file.name.includes(".") ? file.name.slice(file.name.lastIndexOf(".")).toLowerCase() : "";
+  if (!ACCEPTED_EXTENSIONS.includes(ext)) return "Unsupported file type. Upload an Excel (.xlsx, .xls) or CSV file.";
+  if (file.size === 0) return "The file is empty.";
+  if (file.size > maxMb * 1024 * 1024) return `The file is larger than the ${maxMb} MB limit.`;
+  return null;
+}
