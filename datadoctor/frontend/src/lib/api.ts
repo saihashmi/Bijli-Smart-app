@@ -117,20 +117,79 @@ export type Dataset = {
 
 export type Peek = { sheet_index: number; rows: string[][]; total_rows: number; total_columns: number; truncated_columns: boolean };
 
+export type HeaderChange = { position: number; original: string; new: string; reason: "blank" | "duplicate" | "whitespace" };
+
 export type AnalysisSession = {
   id: string;
   dataset_id: string;
   original_filename: string;
   file_type: string;
+  file_size: number;
   sheet_index: number | null;
   sheet_name: string | null;
   header_row: number;
   rows: number | null;
   columns: number | null;
+  column_names: string[];
+  header_changes: HeaderChange[];
+  warnings: string[];
+  version: number;
   status: string;
   created_at: string;
   updated_at: string;
   expires_at: string;
+};
+
+export type RowsPage = { view: string; version: number; offset: number; total: number; columns: string[]; rows: (string | null)[][] };
+
+export type ColumnType = "integer" | "number" | "date" | "datetime" | "boolean" | "category" | "text" | "other" | "empty";
+
+export type ColumnProfile = {
+  name: string;
+  rows: number;
+  non_missing: number;
+  missing: number;
+  missing_pct: number;
+  missing_kinds: { empty: number; whitespace_only: number; null_token: number; excel_error: number };
+  class_counts: Record<string, number>;
+  whitespace_issues: number;
+  repeated_spaces: number;
+  type: ColumnType;
+  family: string;
+  consistency: number | null;
+  mixed: boolean;
+  family_counts?: Record<string, number>;
+  unique: number;
+  unique_pct?: number;
+  examples: { row: number; value: string }[];
+  numeric?: {
+    count: number; min: number | null; max: number | null; mean: number | null; median: number | null; std: number | null;
+    q1: number | null; q3: number | null; negatives: number; zeros: number; stored_as_text: number;
+    histogram: { start: number; end: number; count: number }[]; excel_serial_candidates: number;
+  };
+  date?: {
+    native: number; text: number; formats: Record<string, number>; evidence: Record<string, number>; ambiguous: number;
+    invalid: number; resolved: number; min: string | null; max: string | null; future: number; range_note: string | null;
+  };
+  boolean?: { true: number; false: number };
+  text?: { min_length: number; max_length: number };
+  top_values?: { value: string; count: number; pct: number }[];
+  top_values_other?: number;
+};
+
+export type Profile = {
+  session_id: string;
+  version: number;
+  calculated_at: string;
+  rows: number;
+  columns: number;
+  total_cells: number;
+  missing_cells: number;
+  missing_pct: number;
+  duplicate_rows: number;
+  empty_rows: number;
+  empty_columns: number;
+  column_profiles: ColumnProfile[];
 };
 
 /** Upload with real progress events (fetch has no upload progress). Resolves with the created dataset. */
@@ -180,5 +239,9 @@ export const api = {
   createSession: (id: string, sheet_index: number, header_row: number) =>
     request<AnalysisSession>(`/datasets/${id}/sessions`, json("POST", { sheet_index, header_row })),
   sessions: () => request<AnalysisSession[]>("/sessions"),
+  session: (id: string) => request<AnalysisSession>(`/sessions/${id}`),
+  rows: (id: string, offset: number, limit: number, view: "current" | "original" = "current") =>
+    request<RowsPage>(`/sessions/${id}/rows?view=${view}&offset=${offset}&limit=${limit}`),
+  profile: (id: string) => request<Profile>(`/sessions/${id}/profile`),
   deleteSession: (id: string) => request<void>(`/sessions/${id}`, { method: "DELETE" }),
 };

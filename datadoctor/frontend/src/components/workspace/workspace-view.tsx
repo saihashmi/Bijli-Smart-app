@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { CalendarClock, FileSpreadsheet, FolderOpen, Layers, Loader2, RotateCw, Settings2, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { api, ApiError, type Dataset } from "@/lib/api";
+import { forgetSession } from "@/lib/last-session";
 import { formatBytes, formatDate, formatInteger } from "@/lib/format";
 import { useSettings } from "@/lib/use-preferences";
 import { cn } from "@/lib/utils";
@@ -49,6 +50,7 @@ export function WorkspaceView() {
     setDeleting(ds.id);
     try {
       await api.deleteDataset(ds.id);
+      ds.sessions.forEach((s) => forgetSession(s.id));
       setDatasets((list) => list?.filter((d) => d.id !== ds.id) ?? null);
       toast.success(`Deleted ${ds.original_filename}`);
     } catch (e) {
@@ -135,7 +137,9 @@ export function WorkspaceView() {
                               {sheet.columns === 1 ? "" : "s"} · header on row {s.header_row + 1}
                             </span>
                           )}
-                          <Badge variant="secondary">Ready for profiling</Badge>
+                          <Button asChild size="sm" className="ml-auto sm:ml-2">
+                            <Link href={`/s/${s.id}/health`}>Open</Link>
+                          </Button>
                         </li>
                       );
                     })}

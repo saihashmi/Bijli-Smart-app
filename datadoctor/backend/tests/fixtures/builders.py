@@ -110,3 +110,32 @@ def csv_bytes(encoding: str = "utf-8", delimiter: str = ",", rows: list[list[str
     buf = io.StringIO()
     csv.writer(buf, delimiter=delimiter, lineterminator="\r\n").writerows(rows or CSV_ROWS)
     return buf.getvalue().encode(encoding)
+
+
+def xlsx_from_rows(rows: list[list], title: str = "Data", merge: str | None = None) -> bytes:
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = title
+    for r in rows:
+        ws.append(r)
+    if merge:
+        ws.merge_cells(merge)
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+def profiling_workbook() -> bytes:
+    """A small sheet with known, hand-countable quality properties (used by profile tests)."""
+    rows = [
+        ["Invoice", "Date", "City", "Amount", "Paid", "", "Amount", "Notes"],
+        ["INV-1", dt.date(2026, 3, 25), "Lahore", 1250.5, "Yes", None, 1, None],
+        ["INV-2", "25/03/2026", " lahore", "Rs 1,000", "No", None, 2, None],
+        ["INV-3", "03/04/2026", "LAHORE", "(250)", "yes", None, 3, None],
+        ["INV-4", "2026-04-05", "Karachi", "N/A", "No", None, 4, None],
+        ["INV-4", "2026-04-05", "Karachi", "N/A", "No", None, 4, None],
+        [None, None, None, None, None, None, None, None],
+        ["INV-6", "31/02/2026", "Karachi", "#DIV/0!", "TRUE", None, 6, "late"],
+        ["INV-7", "12-Jan-2025", "Islamabad", "  ", "no", None, 7, None],
+    ]
+    return xlsx_from_rows(rows, title="Invoices")

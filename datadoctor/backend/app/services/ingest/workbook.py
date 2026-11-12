@@ -90,26 +90,55 @@ def _count_uncached_formulas(stream) -> int:
             return missing
 
 
+_ERROR_CELL_RE = re.compile(rb"<(?:\w+:)?c\b[^>]*?\bt=\"e\"")
+
+
+def _sheet_parts(zf: zipfile.ZipFile) -> dict[str, str]:
+    """Worksheet name → XML part path inside the xlsx container."""
+    wb_root = parse(zf.open("xl/workbook.xml")).getroot()
+    rels_root = parse(zf.open("xl/_rels/workbook.xml.rels")).getroot()
+    targets = {r.get("Id"): r.get("Target", "") for r in rels_root.iter(f"{NS_PKG_REL}Relationship")}
+    names = set(zf.namelist())
+    parts = {}
+    for sheet in wb_root.iter(f"{NS_MAIN}sheet"):
+        target = targets.get(sheet.get(f"{NS_REL}id"), "")
+        part = target.lstrip("/") if target.startswith("/") else posixpath.normpath(posixpath.join("xl", target))
+        if part in names:
+            parts[sheet.get("name", "")] = part
+    return parts
+
+
 def _formula_scan(path: Path) -> dict[str, int]:
     """Count formula cells whose last calculated value was not saved in the file (xlsx only)."""
     counts: dict[str, int] = {}
     try:
         with zipfile.ZipFile(path) as zf:
-            wb_root = parse(zf.open("xl/workbook.xml")).getroot()
-            rels_root = parse(zf.open("xl/_rels/workbook.xml.rels")).getroot()
-            targets = {r.get("Id"): r.get("Target", "") for r in rels_root.iter(f"{NS_PKG_REL}Relationship")}
-            names = set(zf.namelist())
-            for sheet in wb_root.iter(f"{NS_MAIN}sheet"):
-                target = targets.get(sheet.get(f"{NS_REL}id"), "")
-                part = (
-                    target.lstrip("/") if target.startswith("/") else posixpath.normpath(posixpath.join("xl", target))
-                )
-                if part in names:
-                    with zf.open(part) as fh:
-                        counts[sheet.get("name", "")] = _count_uncached_formulas(fh)
+            for name, part in _sheet_parts(zf).items():
+                with zf.open(part) as fh:
+                    counts[name] = _count_uncached_formulas(fh)
     except Exception:  # noqa: BLE001 - scan is advisory; never block an upload
         return counts
     return counts
+
+
+def count_error_cells(path: Path, sheet_name: str) -> int:
+    """Cells holding an Excel error value (#DIV/0!, #REF!, …). The reader returns them as empty."""
+    try:
+        with zipfile.ZipFile(path) as zf:
+            part = _sheet_parts(zf).get(sheet_name)
+            if part is None:
+                return 0
+            total, tail = 0, b""
+            with zf.open(part) as fh:
+                while chunk := fh.read(_SCAN_CHUNK):
+                    buf = tail + chunk
+                    total += len(_ERROR_CELL_RE.findall(buf))
+                    cut = buf.rfind(b"<")
+                    tail = buf[cut:] if cut >= 0 else b""
+                    total -= len(_ERROR_CELL_RE.findall(tail))  # counted again with the next chunk
+            return total
+    except Exception:  # noqa: BLE001 - advisory only
+        return 0
 
 
 def discover(path: Path, kind: str) -> list[SheetInfo]:

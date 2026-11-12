@@ -19,6 +19,8 @@ FILES = {
     "multi_sheet_sales.xlsx": fx.xlsx_multi_sheet,
     "password_protected.xlsx": fx.encrypted_xlsx,
     "legacy_claims.xls": fx.xls_legacy,
+    "invoices_quality.xlsx": fx.profiling_workbook,
+    "squares_1200.xlsx": lambda: fx.xlsx_from_rows([["n", "square"]] + [[i, i * i] for i in range(1, 1201)]),
 }
 
 if __name__ == "__main__":

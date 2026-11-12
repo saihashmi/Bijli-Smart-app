@@ -61,17 +61,38 @@ class SessionCreate(BaseModel):
     header_row: int = Field(default=0, ge=0, le=50, description="0-based row number holding the column names")
 
 
+class HeaderChange(BaseModel):
+    position: int
+    original: str
+    new: str
+    reason: str
+
+
 class SessionOut(BaseModel):
     id: str
     dataset_id: str
     original_filename: str
     file_type: str
+    file_size: int
     sheet_index: int | None
     sheet_name: str | None
     header_row: int
-    rows: int | None
+    rows: int | None = Field(description="Data rows below the header row")
     columns: int | None
+    column_names: list[str] = []
+    header_changes: list[HeaderChange] = []
+    warnings: list[str] = []
+    version: int = 0
     status: str
     created_at: datetime
     updated_at: datetime
     expires_at: datetime
+
+
+class RowsOut(BaseModel):
+    view: str
+    version: int
+    offset: int
+    total: int
+    columns: list[str]
+    rows: list[list[str | None]]

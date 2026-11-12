@@ -107,8 +107,8 @@ export function UploadStudio() {
     setStarting(true);
     try {
       const sess = await api.createSession(ds.id, sheet, headerRow);
-      toast.success(`Analysis session created for “${sess.sheet_name}”`);
-      router.push(`/workspace?created=${sess.id}`);
+      toast.success(`“${sess.sheet_name}” is ready: ${sess.rows?.toLocaleString("en-US")} rows`);
+      router.push(`/s/${sess.id}/health`);
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Could not start the analysis.");
       setStarting(false);
@@ -238,7 +238,7 @@ export function UploadStudio() {
               {peek && <HeaderRowPreview peek={peek} headerRow={headerRow} onHeaderRow={setHeaderRow} />}
               <div className="flex flex-wrap items-center gap-3 border-t pt-5">
                 <Button size="lg" disabled={sheet === null || !peek || starting} onClick={() => start(phase.dataset)}>
-                  {starting ? <Loader2 className="animate-spin" /> : <ArrowRight />} Start analysis
+                  {starting ? <Loader2 className="animate-spin" /> : <ArrowRight />} {starting ? "Reading the sheet…" : "Start analysis"}
                 </Button>
                 <span className="text-sm text-muted-foreground">Creates an analysis session. Your original file stays unchanged.</span>
               </div>

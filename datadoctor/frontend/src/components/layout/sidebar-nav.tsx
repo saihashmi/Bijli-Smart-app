@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { lastSession, sessionIdFromPath } from "@/lib/last-session";
 import { FOOTER_NAV, PRIMARY_NAV, SESSION_NAV, isActive, sessionHref, type NavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
@@ -29,8 +31,12 @@ function NavLink({ item, href, pathname, onNavigate }: { item: NavItem; href: st
 }
 
 /** Navigation shared by the desktop sidebar and the mobile drawer. */
-export function SidebarNav({ sessionId = null, onNavigate }: { sessionId?: string | null; onNavigate?: () => void }) {
+export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  // The open session comes from the URL; elsewhere, the last session opened in this browser.
+  const [remembered, setRemembered] = useState<string | null>(null);
+  useEffect(() => setRemembered(lastSession()), [pathname]);
+  const sessionId = sessionIdFromPath(pathname) ?? remembered;
   return (
     <nav aria-label="Main" className="flex flex-1 flex-col gap-6 overflow-y-auto">
       <ul className="space-y-1">

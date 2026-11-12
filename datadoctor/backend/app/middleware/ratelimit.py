@@ -7,11 +7,12 @@ import threading
 import time
 from dataclasses import dataclass
 
-from fastapi import Request
+from fastapi import Depends
 
 from ..config import settings
 from ..errors import AppError
-from ..security import unsign
+from ..models import Workspace
+from .workspace import current_workspace
 
 
 @dataclass(frozen=True)
@@ -64,13 +65,12 @@ def rate_limit(bucket: str):
     if bucket not in LIMITS:
         raise ValueError(f"Unknown rate-limit bucket {bucket}")
 
-    def _check(request: Request) -> None:
+    def _check(ws: Workspace = Depends(current_workspace)) -> None:
+        # Keyed by workspace, resolved first (FastAPI caches the dependency per request), so a browser's very
+        # first request is counted against its own new workspace rather than a shared network address.
         if not settings.rate_limits_enabled:
             return
-        key = unsign(request.cookies.get(settings.workspace_cookie), "workspace") or (
-            request.client.host if request.client else "unknown"
-        )
-        wait = limiter.hit(bucket, key)
+        wait = limiter.hit(bucket, ws.id)
         if wait > 0:
             retry = max(1, math.ceil(wait))
             raise AppError(

@@ -12,7 +12,8 @@ settings.storage_dir.mkdir(parents=True, exist_ok=True)
 
 engine = create_engine(
     settings.db_url,
-    connect_args={"check_same_thread": False} if settings.db_url.startswith("sqlite") else {},
+    # timeout: how long a writer waits for SQLite's single write lock before failing (default 5 s).
+    connect_args={"check_same_thread": False, "timeout": 30} if settings.db_url.startswith("sqlite") else {},
 )
 
 

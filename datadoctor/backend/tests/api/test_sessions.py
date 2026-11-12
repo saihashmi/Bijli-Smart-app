@@ -35,7 +35,8 @@ def test_create_session_with_header_row_and_list_it(client):
     res = client.post(f"/api/datasets/{ds['id']}/sessions", json={"sheet_index": 0, "header_row": 1})
     assert res.status_code == 201, res.text
     sess = res.json()
-    assert (sess["sheet_name"], sess["header_row"], sess["rows"], sess["columns"]) == ("Sales", 1, 5, 4)
+    # rows = data rows below the header row (5 sheet rows - title - header)
+    assert (sess["sheet_name"], sess["header_row"], sess["rows"], sess["columns"]) == ("Sales", 1, 3, 4)
     listed = client.get("/api/sessions").json()
     assert [s["id"] for s in listed] == [sess["id"]]
     detail = client.get(f"/api/datasets/{ds['id']}").json()
@@ -111,6 +112,5 @@ def test_retention_purges_expired_datasets(client):
 
 
 def test_upload_rate_limit(client):
-    client.get("/api/settings")  # obtain the workspace cookie first; limits are counted per workspace
     codes = [client.post("/api/uploads", files={"file": ("a.csv", fx.csv_bytes())}).status_code for _ in range(11)]
     assert codes[:10] == [201] * 10 and codes[10] == 429

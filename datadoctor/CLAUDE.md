@@ -4,7 +4,7 @@ Read this first when continuing work. Source of truth: `SPEC.md` (approved) and 
 
 ## Status
 - Phase: **03 BUILD**. SPEC and PLAN approved 2026-11-12.
-- Current milestone: **M4 complete, awaiting approval**. Next: M5 (spreadsheet preview and profiling).
+- Current milestone: **M5 complete, awaiting approval**. Next: M6 (data health score and issue detection).
 - Branch: `ccr-47143d17-8h5n17`. Push with `git push -u origin ccr-47143d17-8h5n17`.
 
 ## Workflow rules (from the product owner)
@@ -50,6 +50,15 @@ Read this first when continuing work. Source of truth: `SPEC.md` (approved) and 
 | CSV: encoding = BOM → strict UTF-8 → charset-normalizer (undecodable chars counted, never silent); delimiter via csv.Sniffer over `, ; tab |`, then a consistency fallback. Format is re-detected deterministically when needed (not stored). | |
 | Analysis session = dataset + worksheet + header_row (0-based). Peek returns raw display strings (`workbook.display_value`), never converted. | Header-row picker needs raw rows |
 | Retention: `retention_loop` runs at startup and hourly. Expired datasets → files deleted, status `deleted`, sessions `expired`. | SPEC D3 |
+| Worker: `app/worker.py::run_limited(fn, *args)` runs fn in a **spawned** process with RLIMIT_AS (`WORKER_MEMORY_MB`) and a timeout (`PROCESS_TIMEOUT_S`). Errors map to `PROCESSING_TIMEOUT` (504), `PROCESSING_OUT_OF_MEMORY` (507), `PROCESSING_FAILED` (500, details only in the log). Task functions must be module-level. | No Redis/Celery |
+| Snapshots: `storage/snapshots/<dataset>/<session>/v<N>.pkl` + `.meta.json` (columns, header changes, warnings). v0 = original after header row. In-process LRU of 2 frames for paging. | `services/storage/snapshots.py` |
+| Parsing (`services/ingest/parse.py`): raw native values, '' → None, trailing empty rows/columns trimmed, headers normalised (blank → "Column N", duplicates → "Name (2)", whitespace collapsed), every change reported. Excel error cells are returned empty by calamine, so they are **counted from the sheet XML** and reported. Merged ranges reported. | |
+| Classification (`services/profiling/values.py`): exact per-cell classes (native/text number, native/text date, bool, text, other) and missing kinds (empty, whitespace-only, null token, Excel error). **Each distinct string is classified once** (pd.factorize) and broadcast. Dates: slash dates give dmy_only / mdy_only / ambiguous / same_either_way / invalid evidence; ambiguous values are never resolved. "Mar-25" is treated as text (ambiguous). | 10M cells: 57.8 s → 10.5 s |
+| Profile (`services/profiling/profile.py`): type = dominant family; `mixed` if under 95%; category = ≤50 unique and ≤80% unique; unique/top values/duplicates use raw values (note: Python treats True == 1 when hashing). Cached in `data_profiles` by `version_hash` (sha256 of active operation ids). | |
+| **Never hold a DB transaction across slow work** (`db.rollback()` before `run_limited`, write afterwards). SQLite busy timeout 30 s. | It caused "database is locked" under concurrent requests. Regression test `tests/api/test_concurrency.py`. |
+| Rate limits are keyed by workspace via `Depends(current_workspace)` (resolved first, cached per request) | Was keyed by IP for cookie-less first requests, so test browsers shared one bucket |
+| Session routes `/s/[sessionId]/{health,clean,dashboard,analyst,export}`. `SessionProvider` loads the session (404 → clear message). Sidebar uses the session from the URL, else the last session in localStorage (forgotten on delete). | |
+| Data grid: `@tanstack/react-virtual` (rows and columns), 200-row pages fetched on scroll. TanStack Table is not needed. | |
 | SQLite drops tzinfo: `models.UTCDateTime` always returns aware UTC | Frontend formats in the workspace time zone |
 | Preferences (time zone, date display, AI column-name sharing) live in `workspaces.settings_json`. Theme stays in the browser. Settings auto-save per control with a toast. | |
 
@@ -73,7 +82,10 @@ Versions: Python 3.12+ (dev box runs 3.13), Node 20+ (dev box runs 22). Dependen
 See PLAN.md §2 and §6.
 
 ## Known issues
-- Excel sheets are fully loaded twice per upload (discovery dimensions + first-rows peek), about 1.8 s each on 200k×10. M5 should cache the parsed sheet.
+- Excel sheets are loaded fully by calamine at upload (dimensions), again for the first-rows peek, and once more at parse (4.6 s for 200k×10). Possible later optimisation: reuse the parse.
+- Profiling worst case is all-unique free text (about 9 s per 2M unique strings). A 200k × 50 sheet of all-unique text could approach the 60 s limit.
+- Unique counts/top values treat True and 1 as equal (Python hashing). Only matters for columns mixing booleans and the number 1.
+- The rows endpoint loads the snapshot into the API process (LRU of 2). Memory scales with sheet size, bounded by the cell limit.
 - `next start` prints a warning because `output: "standalone"` is set. It works. Docker (M16) will use `node .next/standalone/server.js`.
 - A real password-protected **.xls** could not be produced in this environment (LibreOffice ignored the password option). That path is tested by simulating calamine's `PasswordError`. Encrypted **.xlsx** is tested with a real encrypted file.
 - The rate-limit key before a workspace cookie exists is the client address, which is shared by everyone behind the Next proxy. Harmless: pages fetch /api/settings first, which issues the cookie.
@@ -88,9 +100,10 @@ See PLAN.md §2 and §6.
 - **M2. Frontend shell, branding, navigation** (2026-11-12): theme switch (light/dark/system) + WCAG contrast test over all tokens (43 pairs); AppShell with navy sidebar (desktop), slide-out drawer (mobile/tablet), Local-mode badge, skip link; landing page (hero, how it works, features, privacy, CTA; illustration labelled as such, no statistics); Workspace / Upload placeholders, Settings with working theme + live backend/AI status. Tests: vitest 44, Playwright 15 (5 specs × 3 sizes), all passing.
 - **M3. Backend setup, database, health checks** (2026-11-12): config, error envelope, SQLAlchemy models + Alembic `0001_initial_schema` (10 tables, exactly SPEC §8), auto-migrate on startup, server secret (env or generated 0600 file), signed workspace cookie + ownership helpers, rate limiter, safe storage paths, `/api/health` (DB + storage checks, 503 when degraded), `GET/PUT /api/settings`, `DELETE /api/workspace/data`. Frontend: typed API client with error envelope, working Settings page (time zone, date format with live preview, AI column-name switch, limits, delete-all with confirmation, toasts). Bug found by tests and fixed: invalid time zone in PUT returned 500 instead of 422. Tests: pytest 33, vitest 49, Playwright 24.
 - **M4. File upload, validation and worksheet selection** (2026-11-12): streamed upload with real XHR progress and cancel; content-based type detection; empty, corrupted, wrong-content, password-protected, zip-bomb and oversized handling; macro and wrong-extension warnings; filename sanitising; sheet discovery (hidden / very hidden, dimensions, formula cells without cached values, limit checks); CSV encoding/delimiter detection incl. UTF-16, cp1252, quoted newlines; raw first-rows peek with header-row picker; analysis-session creation; Workspace list with resume and delete; retention cleanup. Found and fixed: Next.js 10 MB proxy truncation, 500 instead of 413 through the proxy, upload warnings lost on URL change, slow formula scan, chunk-boundary bug in the new scan. Tests: pytest 84, vitest 52, Playwright 51. Benchmarks (this container): 19.5 MB CSV / 311,759 rows in 0.8 s; 12.2 MB xlsx / 200,001×10 in 5.8 s (upload → preview, measured in the browser).
+- **M5. Spreadsheet preview and profiling** (2026-11-12): worker process (timeout + memory cap); sheet → snapshot v0 with header normalisation, merged/error-cell reporting; exact value classification (numbers with Rs/PKR/lakh/brackets/%, dates with DMY/MDY evidence and no guessing, null tokens, Excel errors); column profiles (type, consistency, missing breakdown, unique, numeric stats + histogram, date range/formats/future, boolean, top values) and dataset counts (missing, exact duplicates, empty rows/columns); profile caching; paged rows API; Data Health Center page (KPIs, column cards with filter, virtualised preview); session pages and nav enabled; placeholders for later screens. Found and fixed: profiling 5.5× too slow, Excel error cells silently empty, SQLite lock under concurrency, rate-limit key sharing. Tests: pytest 109, vitest 52, Playwright 63 (two consecutive clean runs). Benchmarks (this container): parse 200k×10 xlsx 4.6 s; profile 200k×10 2.7 s; profile 200k×50 (10M cells, mixed types) 10.5 s.
 
 ## Pending
-- Product-owner approval of M4, then M5: worker process with timeout and memory cap; parse the chosen sheet with header row into a snapshot (v0) once; paged rows endpoint + virtualised grid; type inference; column statistics; session pages under `/s/[id]/…` and enabling the session nav.
+- Product-owner approval of M5, then M6: issues Q01–Q16 with exact counts, severity, examples and suggested actions (from the profile + classification); Data Health Score per SPEC §10.2 with breakdown and limitations; Data Health Center issue list, score gauge, missing-values chart, sensitive-column marking.
 - Later (landing page): a genuine "Try with sample data" demo once upload works (M4) and sample datasets exist (M14).
 
 ## How to continue

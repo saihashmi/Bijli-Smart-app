@@ -35,7 +35,10 @@ test("upload a multi-sheet workbook, pick sheet and header row, start a session"
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/upload-ready-${info.project.name}.png`, fullPage: true });
 
   await page.getByRole("button", { name: "Start analysis" }).click();
-  await expect(page).toHaveURL(/\/workspace\?created=/);
+  await expect(page).toHaveURL(/\/s\/[0-9a-f-]{36}\/health$/);
+  await expect(page.getByTestId("session-file")).toHaveText("multi_sheet_sales.xlsx");
+
+  await page.goto("/workspace");
   const card = page.getByTestId("dataset-card").first();
   await expect(card).toContainText("multi_sheet_sales.xlsx");
   await expect(card).toContainText("Sales");

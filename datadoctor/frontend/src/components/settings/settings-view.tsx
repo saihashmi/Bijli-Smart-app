@@ -5,6 +5,7 @@ import { Bot, Clock, Database, Loader2, RotateCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api, ApiError, type DateDisplay, type Preferences, type SettingsResponse } from "@/lib/api";
 import { formatDateTime, formatInteger, timeZoneOptions } from "@/lib/format";
+import { forgetSession } from "@/lib/last-session";
 import { BackendStatus } from "@/components/backend-status";
 import { LocalModeBadge } from "@/components/layout/local-mode-badge";
 import { ThemeSwitcher } from "@/components/theme-switcher";
@@ -73,6 +74,7 @@ export function SettingsView() {
     setDeleting(true);
     try {
       const res = await api.deleteAllData();
+      forgetSession();
       toast.success(
         res.datasets_deleted === 0
           ? "There was no stored data to delete."
