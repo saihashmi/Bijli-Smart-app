@@ -1,0 +1,6 @@
+Alembic migrations. Create a new one after changing app/models.py (schema changes need product-owner approval):
+
+    .venv/bin/alembic revision --autogenerate -m "describe change"
+    .venv/bin/alembic upgrade head
+
+The app also runs `upgrade head` automatically on startup.
