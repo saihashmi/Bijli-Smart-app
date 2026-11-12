@@ -26,12 +26,12 @@ export function BackendStatus() {
   if (state.kind === "loading") return <p data-testid="backend-status">Checking backend…</p>;
   if (state.kind === "error")
     return (
-      <p data-testid="backend-status" className="text-destructive">
+      <p data-testid="backend-status" className="text-destructive-text">
         Backend unreachable ({state.message}). Start it with <code>uvicorn app.main:app --port 8000</code>.
       </p>
     );
   return (
-    <p data-testid="backend-status" className="text-success">
+    <p data-testid="backend-status" className="text-success-text">
       Backend connected · API v{state.health.version} · AI {state.health.ai_configured ? "configured" : "not configured"}
     </p>
   );
