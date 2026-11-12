@@ -4,7 +4,7 @@ Read this first when continuing work. Source of truth: `SPEC.md` (approved) and 
 
 ## Status
 - Phase: **03 BUILD**. SPEC and PLAN approved 2026-11-12.
-- Current milestone: **M8 complete, awaiting approval**. Next: M9 (dashboard calculations and chart configuration).
+- Current milestone: **M8 complete.** A premium UI/UX upgrade brief arrived (2026-11-13): `DESIGN_SPEC.md` drafted and **awaiting approval**. Functional M9 is on hold until the product owner chooses the order of work (DESIGN_SPEC §13).
 - Branch: `ccr-47143d17-8h5n17`. Push with `git push -u origin ccr-47143d17-8h5n17`.
 
 ## Workflow rules (from the product owner)
@@ -128,6 +128,7 @@ See PLAN.md §2 and §6.
 - **M8. Cleaning history, undo and reset** (2026-11-13): undo/reset endpoints with audit events and confirmation for reset; deterministic replay with pruning to v0 + 3 recent snapshots; settings (sensitive marks, date readings) restored through undo of renames, removals and date normalisation; audit timeline; before/after comparison API and UI; Cleaning Studio history bar (undo, reset with confirmation), History timeline tab (undone steps kept and marked), Before / after tab. Property tests: 4 random sequences (apply/undo mix, including no-op attempts) checked step by step against an independent in-memory calculation, then reset compared with the original via exact DataFrame equality; forced replay of pruned versions. Found and fixed: undo/reset buttons overflowing on phones (with a regression check). Tests: pytest 184, vitest 52, Playwright 87 (two consecutive clean full runs).
 
 ## Pending
+- Product-owner approval of `DESIGN_SPEC.md` (direction A "The Refinery", tokens, new dependencies three/R3F/drei/motion/recharts, read-only backend additions in §12, order of work in §13). Then write `UI_PLAN.md` and wait for approval before any UI code.
 - Product-owner approval of M8, then M9: `analytics.query()` (count/sum/avg/min/max/median/distinct, group-by, date grain, filters incl. date range, sort, top-N, 500-point cap) used later by dashboard, AI and exports; aggregation/type compatibility rules shared with the frontend; rule-based chart recommendations (SPEC §12.4); dashboard configuration persistence. Tests compare every aggregation with an independent pandas calculation.
 - Revisit in M14: the known flaky browser test (see Known issues), as agreed with the product owner (option a).
 - Later (landing page): a genuine "Try with sample data" demo once upload works (M4) and sample datasets exist (M14).
