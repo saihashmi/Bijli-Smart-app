@@ -34,8 +34,8 @@ test("fix an issue from the Data Health Center with preview and apply", async ({
   await page.getByRole("button", { name: "Apply change" }).click();
   await expect(page.getByText(/Trim whitespace: Leading and trailing spaces removed/)).toBeVisible();
   await expect(page.getByText("Cleaned · v1")).toBeVisible();
-  await page.getByRole("tab", { name: /Applied changes/ }).click();
-  await expect(page.getByTestId("history")).toContainText("#1");
+  await page.getByRole("tab", { name: /History/ }).click();
+  await expect(page.getByTestId("timeline")).toContainText("Applied #1: Trim whitespace");
 });
 
 test("merge category spellings", async ({ page }) => {
@@ -60,7 +60,7 @@ test("destructive changes ask for confirmation and keep original row numbers", a
   const dialog = page.getByRole("alertdialog");
   await expect(dialog).toContainText("1 row(s) will be removed");
   await dialog.getByRole("button", { name: "Cancel" }).click();
-  await expect(page.getByText("Original data")).toBeVisible(); // nothing applied
+  await expect(page.getByText("Original data", { exact: true })).toBeVisible(); // nothing applied
   await page.getByRole("button", { name: "Apply change" }).click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Yes, apply" }).click();
   await expect(page.getByTestId("session-file").locator("..").locator("..")).toContainText("7 rows");
@@ -99,4 +99,49 @@ test("missing values are never filled without an explicit value", async ({ page 
   await page.getByLabel("Fill value").fill("0");
   await page.getByRole("button", { name: "Preview on full data" }).click();
   await expect(page.getByTestId("op-preview")).toContainText("filled with the value “0”");
+});
+
+test("undo, reset, before/after and the audit timeline", async ({ page }, info) => {
+  const base = await openSession(page);
+  await page.goto(`${base}/clean?op=trim_whitespace`);
+  await page.getByRole("button", { name: "Preview on full data" }).click();
+  await page.getByRole("button", { name: "Apply change" }).click();
+  await expect(page.getByText("Cleaned · v1")).toBeVisible();
+
+  await pickTool(page, "Remove exact duplicate rows");
+  await page.getByRole("button", { name: "Preview on full data" }).click();
+  await page.getByRole("button", { name: "Apply change" }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Yes, apply" }).click();
+  await expect(page.getByText("Cleaned · v2")).toBeVisible();
+  await expect(page.getByTestId("history-bar")).toContainText("2 changes applied");
+  const bar = await page.getByTestId("history-bar").boundingBox();
+  for (const name of ["Undo last change", "Reset to original"]) {
+    const btn = await page.getByRole("button", { name }).boundingBox();
+    expect(btn!.x + btn!.width).toBeLessThanOrEqual(bar!.x + bar!.width + 0.5); // regression: overflowed on phones
+  }
+
+  await page.getByRole("tab", { name: "Before / after" }).click();
+  const compare = page.getByTestId("compare-view");
+  await expect(compare).toContainText("Removed");
+  await expect(compare).toContainText("lahore");
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/compare-${info.project.name}.png`, fullPage: true });
+
+  await page.getByRole("button", { name: "Undo last change" }).click();
+  await expect(page.getByText("Undid “Remove exact duplicate rows”")).toBeVisible();
+  await expect(page.getByText("Cleaned · v1")).toBeVisible();
+  await expect(page.getByTestId("session-file").locator("..").locator("..")).toContainText("8 rows");
+
+  await page.getByRole("button", { name: "Reset to original" }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Reset everything" }).click();
+  await expect(page.getByText("Original data", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("history-bar")).toContainText("No changes applied");
+  await expect(page.getByRole("button", { name: "Undo last change" })).toBeDisabled();
+
+  await page.getByRole("tab", { name: /History/ }).click();
+  const timeline = page.getByTestId("timeline");
+  await expect(timeline.getByRole("listitem")).toHaveCount(4);
+  await expect(timeline).toContainText("Undid #2: Remove exact duplicate rows");
+  await expect(timeline).toContainText("Reset to original (1 change undone)");
+  await expect(timeline.getByText("Undone", { exact: true })).toHaveCount(2); // both steps kept in history, marked undone
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/timeline-${info.project.name}.png`, fullPage: true });
 });

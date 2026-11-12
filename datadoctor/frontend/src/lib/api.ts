@@ -225,6 +225,29 @@ export type AppliedOperation = {
   summary: string | null;
 };
 
+export type TimelineEvent = {
+  id: string;
+  type: "apply" | "undo" | "reset" | "sensitive_columns" | string;
+  details: Record<string, unknown>;
+  created_at: string;
+};
+
+export type Timeline = { operations: AppliedOperation[]; events: TimelineEvent[]; current_version: number };
+
+export type Comparison = {
+  columns: { name: string; original: string | null }[];
+  total: number;
+  changed_rows: number;
+  removed_rows: number;
+  offset: number;
+  version: number;
+  rows: {
+    row: number;
+    removed: boolean;
+    cells: { before: string | null; after: string | null; changed: boolean; new_column: boolean }[];
+  }[];
+};
+
 export type CategoryGroup = { suggested: string; variants: { label: string; count: number }[] };
 
 export type ColumnType = "integer" | "number" | "date" | "datetime" | "boolean" | "category" | "text" | "other" | "empty";
@@ -368,6 +391,15 @@ export const api = {
       `/sessions/${id}/cleaning/category-suggestions?column=${encodeURIComponent(column)}`,
     ),
   history: (id: string) => request<AppliedOperation[]>(`/sessions/${id}/history`),
+  timeline: (id: string) => request<Timeline>(`/sessions/${id}/timeline`),
+  undo: (id: string) => request<{ undone: number[]; session: AnalysisSession }>(`/sessions/${id}/cleaning/undo`, { method: "POST" }),
+  reset: (id: string) =>
+    request<{ undone: number[]; session: AnalysisSession }>(`/sessions/${id}/cleaning/reset`, json("POST", { confirm: true })),
+  compare: (id: string, opts: { offset: number; limit: number; changedOnly: boolean; columns: string[] }) => {
+    const q = new URLSearchParams({ offset: String(opts.offset), limit: String(opts.limit), changed_only: String(opts.changedOnly) });
+    opts.columns.forEach((c) => q.append("columns", c));
+    return request<Comparison>(`/sessions/${id}/compare?${q}`);
+  },
   rows: (id: string, offset: number, limit: number, view: "current" | "original" = "current") =>
     request<RowsPage>(`/sessions/${id}/rows?view=${view}&offset=${offset}&limit=${limit}`),
   profile: (id: string) => request<Profile>(`/sessions/${id}/profile`),

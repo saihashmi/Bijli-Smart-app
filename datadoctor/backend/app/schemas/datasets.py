@@ -120,3 +120,7 @@ class OperationOut(BaseModel):
     created_at: datetime
     undone_at: datetime | None = None
     summary: str | None = None
+
+
+class ResetRequest(BaseModel):
+    confirm: bool = False

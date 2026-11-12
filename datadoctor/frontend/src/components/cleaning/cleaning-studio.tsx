@@ -3,15 +3,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
-  CalendarCheck, CaseSensitive, Check, Columns3, Copy, Eraser, Eye, FileWarning, Hash, History, Loader2, Rows3, ScanSearch,
-  Space, SquareDashed, Tags, Trash2, Wand2,
+  ArrowLeftRight, CalendarCheck, CaseSensitive, Check, Columns3, Copy, Eraser, Eye, FileWarning, Hash, History, Loader2,
+  RotateCcw, Rows3, ScanSearch, Space, SquareDashed, Tags, Trash2, Undo2, Wand2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
-  api, ApiError, type AppliedOperation, type ColumnProfile, type OperationSpec, type OpPreview, type Profile,
+  api, ApiError, type ColumnProfile, type OperationSpec, type OpPreview, type Profile, type Timeline,
 } from "@/lib/api";
-import { formatDateTime, formatInteger } from "@/lib/format";
-import { useSettings } from "@/lib/use-preferences";
+import { formatInteger } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useAnalysisSession } from "@/components/session/session-context";
 import { DataGrid } from "@/components/health/data-grid";
@@ -26,7 +25,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { NativeSelect } from "@/components/ui/native-select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CompareView } from "./compare-view";
 import { Field, type Values } from "./fields";
+import { HistoryTimeline } from "./history-timeline";
 import { PreviewPanel } from "./preview-panel";
 
 const ICONS: Record<string, typeof Wand2> = {
@@ -61,10 +62,11 @@ function payload(spec: OperationSpec, values: Values): Values {
 export function CleaningStudio() {
   const { session, setSession } = useAnalysisSession();
   const params = useSearchParams();
-  const settings = useSettings();
   const [specs, setSpecs] = useState<OperationSpec[] | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [history, setHistory] = useState<AppliedOperation[]>([]);
+  const [timeline, setTimeline] = useState<Timeline | null>(null);
+  const [historyBusy, setHistoryBusy] = useState<"undo" | "reset" | null>(null);
+  const [resetOpen, setResetOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [values, setValues] = useState<Values>({});
   const [preview, setPreview] = useState<OpPreview | null>(null);
@@ -78,7 +80,7 @@ export function CleaningStudio() {
   }, []);
   const loadSide = useCallback(() => {
     api.profile(session.id).then(setProfile).catch(() => setProfile(null));
-    api.history(session.id).then(setHistory).catch(() => setHistory([]));
+    api.timeline(session.id).then(setTimeline).catch(() => setTimeline(null));
   }, [session.id]);
   useEffect(loadSide, [loadSide, session.version]);
 
@@ -157,11 +159,82 @@ export function CleaningStudio() {
     specs?.forEach((s) => g.set(s.group, [...(g.get(s.group) ?? []), s]));
     return [...g.entries()];
   }, [specs]);
-  const active = history.filter((h) => h.status === "active");
-  const prefs = settings?.preferences;
+  const active = (timeline?.operations ?? []).filter((h) => h.status === "active");
+  const last = active[active.length - 1];
+
+  async function undo() {
+    setHistoryBusy("undo");
+    try {
+      const res = await api.undo(session.id);
+      setSession(res.session);
+      toast.success(`Undid “${last?.title ?? "last change"}”`);
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Could not undo.");
+    } finally {
+      setHistoryBusy(null);
+    }
+  }
+
+  async function reset() {
+    setHistoryBusy("reset");
+    try {
+      const res = await api.reset(session.id);
+      setSession(res.session);
+      toast.success(`Reset to the original data (${res.undone.length} change${res.undone.length === 1 ? "" : "s"} undone)`);
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Could not reset.");
+    } finally {
+      setHistoryBusy(null);
+      setResetOpen(false);
+    }
+  }
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-col gap-3 rounded-xl border bg-card px-4 py-3 sm:flex-row sm:items-center" data-testid="history-bar">
+        <p className="text-sm">
+          {active.length === 0 ? (
+            <span className="text-muted-foreground">No changes applied: you are looking at the original data.</span>
+          ) : (
+            <>
+              <span className="font-medium">{active.length} change{active.length === 1 ? "" : "s"} applied.</span>{" "}
+              <span className="text-muted-foreground">Last: {last?.title}</span>
+            </>
+          )}
+        </p>
+        <div className="flex flex-wrap gap-2 sm:ml-auto">
+          <Button variant="outline" size="sm" disabled={!active.length || historyBusy !== null || busy !== null} onClick={undo}>
+            {historyBusy === "undo" ? <Loader2 className="animate-spin" /> : <Undo2 />} Undo last change
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!active.length || historyBusy !== null || busy !== null}
+            onClick={() => setResetOpen(true)}
+          >
+            {historyBusy === "reset" ? <Loader2 className="animate-spin" /> : <RotateCcw />} Reset to original
+          </Button>
+        </div>
+      </div>
+
+      <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset to the original data?</AlertDialogTitle>
+            <AlertDialogDescription>
+              All {active.length} applied change{active.length === 1 ? "" : "s"} will be undone and the working copy will match your
+              uploaded file again. The steps stay in the history for your audit trail.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction destructive onClick={reset}>
+              Reset everything
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="grid items-start gap-6 lg:grid-cols-[17rem_minmax(0,1fr)]">
         {/* Tool palette */}
         <Card className="gap-2 py-4">
@@ -323,8 +396,11 @@ export function CleaningStudio() {
           <TabsTrigger value="original">
             <Eye aria-hidden /> Original
           </TabsTrigger>
+          <TabsTrigger value="compare">
+            <ArrowLeftRight aria-hidden /> Before / after
+          </TabsTrigger>
           <TabsTrigger value="history">
-            <History aria-hidden /> Applied changes ({active.length})
+            <History aria-hidden /> History ({timeline?.events.length ?? 0})
           </TabsTrigger>
         </TabsList>
         <TabsContent value="current">
@@ -333,26 +409,11 @@ export function CleaningStudio() {
         <TabsContent value="original">
           <OriginalGrid sessionId={session.id} />
         </TabsContent>
+        <TabsContent value="compare">
+          <CompareView sessionId={session.id} columns={session.column_names} version={session.version} />
+        </TabsContent>
         <TabsContent value="history">
-          {active.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No changes yet. The current data is identical to the original.</p>
-          ) : (
-            <ol className="space-y-2" data-testid="history">
-              {active.map((h) => (
-                <li key={h.id} className="rounded-lg border bg-card px-4 py-3 text-sm">
-                  <div className="flex flex-wrap items-baseline gap-2">
-                    <Badge variant="secondary">#{h.sequence_number}</Badge>
-                    <span className="font-medium">{h.title}</span>
-                    <span className="ml-auto text-xs text-muted-foreground">
-                      {prefs ? formatDateTime(new Date(h.created_at), prefs.display_timezone, prefs.date_display) : ""}
-                    </span>
-                  </div>
-                  {h.summary && <p className="mt-1 text-muted-foreground">{h.summary}</p>}
-                </li>
-              ))}
-            </ol>
-          )}
-          <p className="mt-3 text-xs text-muted-foreground">Undo and reset to original arrive in Milestone 8.</p>
+          {timeline ? <HistoryTimeline timeline={timeline} /> : <Skeleton className="h-32" />}
         </TabsContent>
       </Tabs>
     </div>
