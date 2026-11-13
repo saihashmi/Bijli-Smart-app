@@ -58,7 +58,11 @@ def recommend(tf: TypedFrame, sensitive: list[str] | None = None) -> dict[str, A
     """Up to four KPI cards and six charts, each with the reason it was chosen."""
     hidden = set(sensitive or [])
     cols = [tf.col(n) for n in tf.columns if n not in hidden]
-    numeric = [c for c in cols if c.kind == "number" and c.unique > 1 and not _looks_like_id(c)]
+    # Measures with more distinct values first: a column with a handful of repeated numbers (a price list, a
+    # rating) is a weaker candidate for totals than one that varies row by row. Ties keep sheet order.
+    numeric = sorted(
+        (c for c in cols if c.kind == "number" and c.unique > 1 and not _looks_like_id(c)), key=lambda c: -c.unique
+    )
     dates = [c for c in cols if c.kind == "date" and int((~np.isnat(c.dates)).sum()) >= 2]
     cats = [c for c in cols if c.kind in ("category", "boolean") and 2 <= c.unique <= LOW_CARDINALITY]
 
@@ -72,28 +76,17 @@ def recommend(tf: TypedFrame, sensitive: list[str] | None = None) -> dict[str, A
             3,
         )
     ]
-    for c in numeric[:3]:
-        if len(kpis) >= 4:
-            break
+    for agg, c in (
+        [("sum", m) for m in numeric[:1]] + [("avg", m) for m in numeric[:1]] + [("sum", m) for m in numeric[1:2]]
+    ):
         kpis.append(
             _widget(
-                f"kpi-sum-{len(kpis)}",
-                f"Sum of {c.name}",
+                f"kpi-{agg}-{len(kpis)}",
+                f"{AGG_LABEL[agg]} of {c.name}",
                 "kpi",
-                {"kind": "aggregate", "measure": {"agg": "sum", "column": c.name}},
-                f"“{c.name}” is numeric, so its total can be calculated.",
-                3,
-            )
-        )
-    if numeric and len(kpis) < 4:
-        c = numeric[0]
-        kpis.append(
-            _widget(
-                "kpi-avg",
-                f"Average of {c.name}",
-                "kpi",
-                {"kind": "aggregate", "measure": {"agg": "avg", "column": c.name}},
-                f"“{c.name}” is numeric, so its average can be calculated.",
+                {"kind": "aggregate", "measure": {"agg": agg, "column": c.name}},
+                f"“{c.name}” is numeric with {c.unique} distinct values, so its {AGG_LABEL[agg].lower()} "
+                "can be calculated.",
                 3,
             )
         )
@@ -124,26 +117,28 @@ def recommend(tf: TypedFrame, sensitive: list[str] | None = None) -> dict[str, A
                 12,
             )
         )
-    for c in cats[:2]:
-        if numeric:
-            m = numeric[0]
-            add(
-                _widget(
-                    f"bar-{c.name}",
-                    f"Sum of {m.name} by {c.name}",
-                    "bar",
-                    {
-                        "kind": "aggregate",
-                        "measure": {"agg": "sum", "column": m.name},
-                        "dimension": {"column": c.name},
-                        "sort": {"by": "value", "dir": "desc"},
-                        "limit": 10,
-                    },
-                    f"“{c.name}” has {c.unique} distinct values and “{m.name}” is numeric: a bar per value, "
-                    "largest first.",
-                )
+
+    def bar_sum(c: Any) -> None:
+        if not numeric:
+            return
+        m = numeric[0]
+        add(
+            _widget(
+                f"bar-{c.name}",
+                f"Sum of {m.name} by {c.name}",
+                "bar",
+                {
+                    "kind": "aggregate",
+                    "measure": {"agg": "sum", "column": m.name},
+                    "dimension": {"column": c.name},
+                    "sort": {"by": "value", "dir": "desc"},
+                    "limit": 10,
+                },
+                f"“{c.name}” has {c.unique} distinct values and “{m.name}” is numeric: a bar per value, largest first.",
             )
-    for c in cats[:2]:
+        )
+
+    def count_chart(c: Any) -> None:
         chart = "donut" if c.unique <= DONUT_MAX else "bar"
         add(
             _widget(
@@ -161,6 +156,11 @@ def recommend(tf: TypedFrame, sensitive: list[str] | None = None) -> dict[str, A
                 + (", few enough to compare as shares of the whole." if chart == "donut" else ": a bar per value."),
             )
         )
+
+    # Variety first: one chart of each kind the columns support, then second helpings.
+    if cats:
+        bar_sum(cats[0])
+        count_chart(cats[1] if len(cats) > 1 else cats[0])
     if numeric:
         m = numeric[0]
         add(
@@ -173,7 +173,7 @@ def recommend(tf: TypedFrame, sensitive: list[str] | None = None) -> dict[str, A
             )
         )
     if len(numeric) >= 2:
-        a, b = numeric[0], numeric[1]
+        a, b = numeric[1], numeric[0]
         add(
             _widget(
                 "scatter-1",
@@ -184,6 +184,13 @@ def recommend(tf: TypedFrame, sensitive: list[str] | None = None) -> dict[str, A
                 "and the sample is disclosed.",
             )
         )
+    if len(cats) > 1:
+        bar_sum(cats[1])
+        count_chart(cats[0])
+
+    halves = [w for w in charts if w["width"] == 6]
+    if len(halves) % 2:
+        halves[-1]["width"] = 12  # no half-empty last row
 
     notes = []
     if not numeric:

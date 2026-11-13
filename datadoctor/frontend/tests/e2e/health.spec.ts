@@ -148,7 +148,7 @@ test("session tools become available in the navigation", async ({ page }) => {
   const nav = isDesktop(page) ? page.getByRole("navigation", { name: "Main" }) : page.getByRole("dialog");
   await nav.getByRole("link", { name: "Dashboard Studio" }).click();
   await expect(page.getByRole("heading", { name: "Dashboard Studio", level: 1 })).toBeVisible();
-  await expect(page.getByTestId("coming-soon")).toContainText("Milestone 10");
+  await expect(page.getByTestId("dashboard-studio")).toBeVisible();
   await expect(page.getByTestId("session-file")).toHaveText("legacy_claims.xls");
 
   // The last session is remembered on other pages.
