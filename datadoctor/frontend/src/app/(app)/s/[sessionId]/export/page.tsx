@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ComingSoon } from "@/components/layout/coming-soon";
+import { ExportCenter } from "@/components/export/export-center";
 import { PageHeader } from "@/components/layout/page-header";
 
 export const metadata: Metadata = { title: "Export Center" };
@@ -7,8 +7,8 @@ export const metadata: Metadata = { title: "Export Center" };
 export default function Page() {
   return (
     <>
-      <PageHeader title="Export Center" />
-      <ComingSoon milestone={13} title="Export Center" points={["Excel workbook: cleaned data, quality report, audit log and statistics", "PDF report with charts and findings, timestamped in your time zone", "Protection against formula injection in exported text"]} />
+      <PageHeader title="Export Center" description="Take your cleaned data and a report with you. Files are built from the same figures you see in the app." />
+      <ExportCenter />
     </>
   );
 }

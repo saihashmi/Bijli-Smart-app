@@ -35,6 +35,10 @@ function describe(e: TimelineEvent): { icon: typeof Wand2; title: string; body?:
         .join(" · "),
     };
   }
+  if (e.type === "export") {
+    const kind = d.type === "pdf" ? "PDF report" : "Excel workbook";
+    return { icon: Wand2, title: d.status === "done" ? `Exported: ${kind}` : `Export failed: ${kind}` };
+  }
   return { icon: Wand2, title: e.type };
 }
 

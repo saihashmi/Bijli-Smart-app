@@ -14,7 +14,7 @@ from .config import settings
 from .errors import install_error_handlers
 from .middleware.upload_limit import UploadSizeLimitMiddleware
 from .migrate import upgrade_to_head
-from .routers import analyst, analytics, cleaning, datasets, health, sessions
+from .routers import analyst, analytics, cleaning, datasets, exports, health, sessions
 from .routers import settings as settings_router
 from .security import secret_key
 from .services.storage.paths import ensure_storage
@@ -62,3 +62,4 @@ app.include_router(sessions.router)
 app.include_router(cleaning.router)
 app.include_router(analytics.router)
 app.include_router(analyst.router)
+app.include_router(exports.router)
