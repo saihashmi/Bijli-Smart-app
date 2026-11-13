@@ -131,7 +131,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 type="button"
                 onClick={() => setPalette(true)}
                 className="hidden h-8 cursor-pointer items-center gap-2 rounded-lg border bg-card/60 px-2.5 text-xs text-muted-foreground outline-none hover:bg-card hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring md:inline-flex"
-                aria-label="Open command palette"
+                title="Open the command palette"
               >
                 <Search className="size-3.5" aria-hidden /> Search
                 <kbd className="rounded border bg-muted px-1 text-[10px]">Ctrl K</kbd>

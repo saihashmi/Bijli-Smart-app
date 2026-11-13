@@ -29,7 +29,7 @@ export function HeaderRowPreview({ peek, headerRow, onHeaderRow }: { peek: Peek;
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border" data-testid="raw-preview">
+      <div className="overflow-x-auto rounded-lg border outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="raw-preview" tabIndex={0} role="region" aria-label="First rows of the file">
         <table className="w-full border-collapse font-mono text-xs">
           <caption className="sr-only">First {peek.rows.length} rows of the sheet, exactly as stored in the file</caption>
           <thead>

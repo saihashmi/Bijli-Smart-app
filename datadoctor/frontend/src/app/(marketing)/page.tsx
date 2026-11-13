@@ -130,12 +130,12 @@ export default function LandingPage() {
           </Reveal>
           <ul className="space-y-4">
             {PRIVACY.map((p, i) => (
-              <Reveal key={p.text} delay={i * 0.06}>
-                <li className="hairline flex gap-3 rounded-xl bg-white/[0.03] p-4 text-slate-200">
+              <li key={p.text}>
+                <Reveal delay={i * 0.06} className="hairline flex gap-3 rounded-xl bg-white/[0.03] p-4 text-slate-200">
                   <p.icon className="mt-0.5 size-5 shrink-0 text-teal" aria-hidden />
                   <span>{p.text}</span>
-                </li>
-              </Reveal>
+                </Reveal>
+              </li>
             ))}
           </ul>
         </div>

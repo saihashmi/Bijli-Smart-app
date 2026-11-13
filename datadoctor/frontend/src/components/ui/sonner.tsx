@@ -16,6 +16,8 @@ function Toaster(props: ToasterProps) {
           "--normal-bg": "var(--popover)",
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
+          // Sonner's default green and red text miss WCAG AA on their tinted backgrounds in the light theme.
+          ...(resolvedTheme === "dark" ? {} : { "--success-text": "#166534", "--error-text": "#b91c1c", "--warning-text": "#92400e", "--info-text": "#1d4ed8" }),
         } as React.CSSProperties
       }
       {...props}

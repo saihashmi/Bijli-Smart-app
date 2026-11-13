@@ -140,6 +140,28 @@ export function DashboardStudio() {
     return () => clearTimeout(t);
   }, [dash, sid]);
 
+  // Leaving the page inside the auto-save delay must not lose the last change.
+  const latest = useRef<Dashboard | null>(null);
+  latest.current = dash;
+  useEffect(() => {
+    const flush = () => {
+      if (!dirty.current || !latest.current) return;
+      dirty.current = false;
+      void fetch(`/api/sessions/${sid}/dashboard`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(latest.current),
+        keepalive: true,
+        credentials: "same-origin",
+      });
+    };
+    window.addEventListener("pagehide", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      flush(); // also when navigating to another screen inside the app
+    };
+  }, [sid]);
+
   const update = (fn: (d: Dashboard) => Dashboard) => {
     dirty.current = true;
     setDash((d) => (d ? fn(d) : d));
