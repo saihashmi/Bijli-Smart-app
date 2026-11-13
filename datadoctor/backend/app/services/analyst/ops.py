@@ -167,6 +167,10 @@ def _what(measure: str | None, agg: str) -> str:
     return "number of rows" if not measure else f"{AGG_WORD[agg]} of “{measure}”"
 
 
+def _cap(text: str) -> str:
+    return text[:1].upper() + text[1:]  # str.capitalize() would lower-case the column name
+
+
 def _notes(meta: dict[str, Any], measure: str | None = None, dim: str | None = None) -> list[str]:
     notes = []
     if meta.get("rows_after_filters", 0) < meta.get("rows_total", 0):
@@ -276,9 +280,7 @@ def _group_rank(p: GroupRank, tf: TypedFrame, *_: Any) -> dict[str, Any]:
         "group_rank",
         p,
         text,
-        table=_table(
-            [p.group_by, what.capitalize(), "Rows"], [[r["label"], r["value"], r["rows"]] for r in res["rows"]]
-        ),
+        table=_table([p.group_by, _cap(what), "Rows"], [[r["label"], r["value"], r["rows"]] for r in res["rows"]]),
         chart={"chart": "bar", "result": res} if rows else None,
         notes=_notes(res["meta"], p.measure, p.group_by),
     )
@@ -325,7 +327,7 @@ def _time_trend(p: TimeTrend, tf: TypedFrame, *_: Any) -> dict[str, Any]:
         p,
         text,
         table=_table(
-            [p.grain.capitalize(), what.capitalize(), "Rows"],
+            [p.grain.capitalize(), _cap(what), "Rows"],
             [[r["label"], r["value"], r["rows"]] for r in res["rows"]],
         ),
         chart={"chart": "line", "result": res} if len(rows) >= 2 else None,
@@ -352,7 +354,7 @@ def _extreme_period(p: ExtremePeriod, tf: TypedFrame, *_: Any) -> dict[str, Any]
         p,
         text,
         table=_table(
-            [p.grain.capitalize(), what.capitalize(), "Rows"],
+            [p.grain.capitalize(), _cap(what), "Rows"],
             [[r["label"], r["value"], r["rows"]] for r in res["rows"]],
         ),
         chart={"chart": "bar", "result": res} if rows else None,
@@ -387,9 +389,7 @@ def _compare_groups(p: CompareGroups, tf: TypedFrame, *_: Any) -> dict[str, Any]
         "compare_groups",
         p,
         text,
-        table=_table(
-            [p.group_by, what.capitalize(), "Rows"], [[r["label"], r["value"], r["rows"]] for r in res["rows"]]
-        ),
+        table=_table([p.group_by, _cap(what), "Rows"], [[r["label"], r["value"], r["rows"]] for r in res["rows"]]),
         chart={"chart": "bar", "result": res},
         notes=_notes(meta, p.measure, p.group_by),
     )
