@@ -64,6 +64,9 @@ class ColumnValues:
     date_evidence: dict[str, int] = field(default_factory=dict)
     date_ambiguous_by_format: dict[str, int] = field(default_factory=dict)
     plain_numeric_text: int = 0  # numeric text with no formatting at all, e.g. "1250.5" (normal in CSV files)
+    row_date_format: np.ndarray | None = None  # per-row date format key ("" when not a date; "Excel date" = native)
+    row_ambiguous: np.ndarray | None = None  # per-row: ambiguous day/month order
+    row_invalid_date: np.ndarray | None = None  # per-row: looks like a date but is impossible
     edge_ws: pd.Series | None = None  # per-row: text with leading/trailing whitespace
     repeated_ws: pd.Series | None = None  # per-row: text with repeated inner spaces
     str_codes: np.ndarray | None = None  # factorize codes for string rows (aligned with str_index)
@@ -157,6 +160,9 @@ def classify(series: pd.Series) -> ColumnValues:
     whitespace_issues = repeated = plain_numeric = 0
     edge_mask = np.zeros(n, dtype=bool)
     rep_mask = np.zeros(n, dtype=bool)
+    row_fmt = np.array([""] * n, dtype=object)
+    row_amb = np.zeros(n, dtype=bool)
+    row_inv = np.zeros(n, dtype=bool)
     codes = uniques = None
     ambiguous_by_format: dict[str, int] = {}
 
@@ -175,6 +181,7 @@ def classify(series: pd.Series) -> ColumnValues:
             else:
                 classes[i] = "other"
         nd = classes == "native_date"
+        row_fmt[nd] = "Excel date"
         if nd.any():
             dates.iloc[np.flatnonzero(nd)] = pd.to_datetime(pd.Series(values[nd]), errors="coerce").to_numpy()
 
@@ -224,6 +231,9 @@ def classify(series: pd.Series) -> ColumnValues:
                     ambiguous_by_format[key] = c
             mask = u_class[codes] == "date_text"
             dates.iloc[str_idx[mask]] = u_dates.to_numpy()[codes[mask]]
+            row_fmt[str_idx[mask]] = u_fmt[codes[mask]]
+            row_amb[str_idx] = u_ev["ambiguous"][codes]
+            row_inv[str_idx] = u_ev["invalid"][codes]
 
     missing = pd.Series(missing_kind > 0, index=index)
     has_time = False
@@ -248,6 +258,9 @@ def classify(series: pd.Series) -> ColumnValues:
         plain_numeric_text=plain_numeric,
         whitespace_issues=whitespace_issues,
         repeated_spaces=repeated,
+        row_date_format=row_fmt,
+        row_ambiguous=row_amb,
+        row_invalid_date=row_inv,
         edge_ws=pd.Series(edge_mask, index=index),
         repeated_ws=pd.Series(rep_mask, index=index),
         str_codes=codes,

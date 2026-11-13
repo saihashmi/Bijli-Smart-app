@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Copy, Grid3x3, Info, ListChecks, Loader2, RotateCw, Rows3, Search, SquareDashed } from "lucide-react";
+import { AlertTriangle, Columns3, Copy, FileWarning, Grid3x3, Info, ListChecks, Loader2, RotateCw, Rows3, Ruler, Search, SquareDashed } from "lucide-react";
 import { toast } from "sonner";
 import { api, ApiError, type Profile } from "@/lib/api";
 import { formatInteger } from "@/lib/format";
@@ -12,25 +12,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Reveal } from "@/components/ui/reveal";
+import { StatTile } from "@/components/ui/stat-tile";
 import { ColumnCard } from "./column-card";
+import { QualityDistribution, SeverityBreakdown, TypeDistribution } from "./distributions";
+import { MissingHeatmap } from "./heatmap";
 import { DataGrid } from "./data-grid";
 import { IssueList } from "./issue-list";
 import { MissingChart } from "./missing-chart";
 import { ScoreCard } from "./score-card";
-
-function Kpi({ icon: Icon, label, value, sub, testId }: { icon: typeof Rows3; label: string; value: string; sub?: string; testId?: string }) {
-  return (
-    <Card className="gap-1 py-4" data-testid={testId}>
-      <CardContent className="px-4">
-        <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-          <Icon className="size-3.5" aria-hidden /> {label}
-        </p>
-        <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
-        {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
-      </CardContent>
-    </Card>
-  );
-}
 
 const plural = (n: number, word: string) => `${formatInteger(n)} ${word}${n === 1 ? "" : "s"}`;
 
@@ -73,6 +63,12 @@ export function HealthView() {
       setBusyColumn(null);
     }
   }
+
+  // Tiles derived from the issue list (cells/rows counted by the server).
+  const sumIssues = (codes: string[]) =>
+    (profile?.issues ?? []).filter((i) => codes.includes(i.code)).reduce((a, i) => a + i.affected_rows, 0);
+  const invalid = sumIssues(["Q09", "Q12"]);
+  const inconsistent = sumIssues(["Q05", "Q06", "Q07", "Q08", "Q10"]);
 
   return (
     <div className="space-y-6">
@@ -132,40 +128,88 @@ export function HealthView() {
 
       {profile && (
         <>
-          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
-            <ScoreCard health={profile.health} />
+          <div className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+            <Reveal>
+              <ScoreCard health={profile.health} />
+            </Reveal>
             <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-3" data-testid="health-kpis">
-                <Kpi icon={Rows3} label="Rows" value={formatInteger(profile.rows)} sub={plural(profile.columns, "column")} />
-                <Kpi
+              <div className="grid grid-cols-2 gap-3 xl:grid-cols-3" data-testid="health-kpis">
+                <StatTile icon={Rows3} label="Rows" value={formatInteger(profile.rows)} sub={plural(profile.columns, "column")} />
+                <StatTile icon={Columns3} label="Columns" value={formatInteger(profile.columns)} sub={profile.empty_columns ? `${plural(profile.empty_columns, "empty column")}` : "None empty"} />
+                <StatTile
                   icon={SquareDashed}
-                  label="Missing cells"
+                  label="Missing values"
+                  tone={profile.missing_pct > 20 ? "bad" : profile.missing_pct >= 5 ? "warn" : "good"}
                   value={`${profile.missing_pct}%`}
-                  sub={`${formatInteger(profile.missing_cells)} of ${formatInteger(profile.total_cells)}`}
+                  sub={`${formatInteger(profile.missing_cells)} of ${formatInteger(profile.total_cells)} cells`}
                 />
-                <Kpi
+                <StatTile
                   icon={Copy}
                   label="Exact duplicate rows"
+                  tone={profile.duplicate_rows ? "warn" : "good"}
                   value={formatInteger(profile.duplicate_rows)}
                   sub={profile.empty_rows ? `${plural(profile.empty_rows, "completely empty row")}` : "No empty rows"}
                 />
-                <Kpi
-                  icon={ListChecks}
-                  label="Issues found"
-                  value={formatInteger(profile.issues.length)}
-                  sub={`${profile.issue_counts.high} high · ${profile.issue_counts.medium} medium · ${profile.issue_counts.low} low`}
-                  testId="issue-kpi"
+                <StatTile
+                  icon={FileWarning}
+                  label="Invalid values"
+                  tone={invalid ? "warn" : "good"}
+                  value={formatInteger(invalid)}
+                  sub="Impossible dates and values of the wrong type"
+                />
+                <StatTile
+                  icon={Ruler}
+                  label="Inconsistent formats"
+                  tone={inconsistent ? "warn" : "good"}
+                  value={formatInteger(inconsistent)}
+                  sub="Spacing, spelling variants, text numbers, mixed date formats"
                 />
               </div>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Missing values by column</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <MissingChart columns={profile.column_profiles} />
-                </CardContent>
-              </Card>
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Issues by severity</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <SeverityBreakdown counts={profile.issue_counts} />
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Columns</CardTitle>
+                    <CardDescription>By detected data type and by quality (values present × matching the column type).</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <TypeDistribution columns={profile.column_profiles} />
+                    <QualityDistribution columns={profile.column_profiles} />
+                  </CardContent>
+                </Card>
+              </div>
             </div>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Missing-value map</CardTitle>
+                <CardDescription>Where in the sheet values are missing. Hover a block for its rows.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {profile.missing_map ? (
+                  <MissingHeatmap map={profile.missing_map} totalRows={profile.rows} />
+                ) : (
+                  <p className="text-sm text-muted-foreground">Not available for this dataset.</p>
+                )}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Missing values by column</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <MissingChart columns={profile.column_profiles} />
+              </CardContent>
+            </Card>
           </div>
 
           <Tabs defaultValue="issues">
@@ -225,6 +269,7 @@ export function HealthView() {
                     total={session.rows ?? 0}
                     version={session.version}
                     profiles={profile.column_profiles}
+                    showFlags
                   />
                 </CardContent>
               </Card>

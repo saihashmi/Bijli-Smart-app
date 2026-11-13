@@ -173,6 +173,28 @@ def _column_profile(name: str, series: pd.Series, cv: ColumnValues, today: datet
     return prof
 
 
+MISSING_MAP_BUCKETS = 50
+
+
+def _missing_map(df: pd.DataFrame, classified: dict[str, ColumnValues]) -> dict[str, Any]:
+    """Share of missing values per column in up to 50 consecutive row buckets (for the heatmap)."""
+    rows = len(df)
+    buckets = min(MISSING_MAP_BUCKETS, rows)
+    if not buckets:
+        return {"buckets": 0, "bucket_rows": 0, "columns": [], "values": []}
+    edges = np.linspace(0, rows, buckets + 1).astype(int)
+    values = []
+    for c in df.columns:
+        m = classified[c].missing.to_numpy()
+        values.append([round(float(m[edges[i] : edges[i + 1]].mean()), 3) for i in range(buckets)])
+    return {
+        "buckets": buckets,
+        "bucket_rows": int(math.ceil(rows / buckets)),
+        "columns": [str(c) for c in df.columns],
+        "values": values,
+    }
+
+
 def dataset_profile(
     df: pd.DataFrame, today: datetime | None = None, context: dict[str, Any] | None = None
 ) -> dict[str, Any]:
@@ -191,6 +213,7 @@ def dataset_profile(
 
     issues = detect(df, classified, columns, context or {})
     return {
+        "missing_map": _missing_map(df, classified),
         "issues": issues,
         "rows": rows,
         "columns": cols,

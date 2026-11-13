@@ -97,6 +97,8 @@ class RowsOut(BaseModel):
     columns: list[str]
     rows: list[list[str | None]]
     row_numbers: list[int] = []
+    cell_flags: list[list[str]] | None = None  # per cell: "m" missing, "i" invalid date, "c" changed since original
+    row_flags: list[str] | None = None  # per row: "d" exact duplicate of another row
 
 
 class SensitiveColumnsIn(BaseModel):

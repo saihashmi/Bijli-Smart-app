@@ -23,6 +23,7 @@ test("landing page explains the product and links into the app", async ({ page }
 
   await page.getByRole("link", { name: "Explore Features" }).click();
   await expect(page).toHaveURL(/#features$/);
+  await expect(page.locator("#features")).toBeInViewport(); // let the smooth scroll finish before the next click
   await page.getByRole("link", { name: "Launch DataDoctor AI" }).click();
   await expect(page).toHaveURL(/\/upload$/);
   await page.goBack(); // regression: Back after a section link must return to the landing page

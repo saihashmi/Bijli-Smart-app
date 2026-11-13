@@ -65,11 +65,43 @@ test("health score and issue list", async ({ page }, info) => {
   const high = await issues.count();
   expect(high).toBeGreaterThan(0);
   expect(high).toBeLessThan(total);
-  for (const badge of await issues.locator("[data-slot=badge]").first().allTextContents()) expect(badge).toBe("High");
+  for (const badge of await issues.locator("[data-slot=badge]").first().allTextContents()) expect(badge).toContain("High");
   await page.getByRole("radio", { name: /^All/ }).click();
   await page.getByLabel("Filter by column").selectOption("Date");
   await expect(issues.filter({ hasText: "Exact duplicate rows" })).toHaveCount(0);
   await expect(issues.filter({ hasText: "Invalid dates" })).toHaveCount(1);
+});
+
+test("drill down from an issue to the affected rows, and the missing-value map", async ({ page }) => {
+  await openSession(page, "invoices_quality.xlsx");
+  await expect(page.getByTestId("missing-heatmap").getByRole("img")).toHaveAccessibleName(/Most affected columns: Column 6 \(100%\), Notes \(88%\)/);
+  await expect(page.getByTestId("health-kpis")).toContainText("Invalid values");
+  await expect(page.getByTestId("health-kpis")).toContainText("Inconsistent formats");
+
+  const issue = page.getByTestId("issue").filter({ hasText: "Missing values" }).filter({ hasText: "Notes" });
+  await issue.getByRole("button", { name: "Show affected rows" }).click();
+  const dialog = page.getByTestId("issue-rows");
+  await expect(dialog).toContainText("7 affected rows");
+  await expect(dialog.getByRole("row")).toHaveCount(8); // header + 7 rows
+  await expect(dialog.getByRole("rowheader", { name: "2", exact: true })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+
+  // Structural issues have no row view.
+  const header = page.getByTestId("issue").filter({ hasText: "Blank or duplicate column header" }).first();
+  await expect(header.getByRole("button", { name: "Show affected rows" })).toHaveCount(0);
+});
+
+test("gauge shows the final score immediately when reduced motion is requested", async ({ browser }) => {
+  const context = await browser.newContext({ reducedMotion: "reduce" });
+  const page = await context.newPage();
+  await openSession(page, "invoices_quality.xlsx");
+  const score = page.getByTestId("health-score");
+  const first = await score.textContent();
+  await page.waitForTimeout(600);
+  expect(await score.textContent()).toBe(first);
+  await expect(page.getByRole("img", { name: /Data Health Score \d+ out of 100/ })).toBeVisible();
+  await context.close();
 });
 
 test("personal information is flagged and can be marked sensitive", async ({ page }) => {

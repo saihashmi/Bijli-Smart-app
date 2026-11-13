@@ -19,8 +19,10 @@ from ..middleware.ratelimit import rate_limit
 from ..middleware.workspace import current_workspace, owned_dataset, owned_session
 from ..models import AnalysisSession, AuditEvent, DataProfile, Dataset, Workspace, new_id
 from ..schemas.datasets import RowsOut, SensitiveColumnsIn, SessionCreate, SessionOut
+from ..services.cleaning.lineage import column_origins
 from ..services.ingest.parse import parse_to_snapshot
 from ..services.ingest.workbook import display_value
+from ..services.profiling import drilldown
 from ..services.profiling.health import finalize
 from ..services.profiling.tasks import PROFILE_SCHEMA, profile_snapshot
 from ..services.storage import snapshots
@@ -153,6 +155,7 @@ async def get_rows(
     view: str = Query("current", pattern="^(current|original)$"),
     offset: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=MAX_PAGE),
+    flags: bool = False,
     ws: Workspace = Depends(current_workspace),
     db: Session = Depends(get_db),
 ):
@@ -164,6 +167,28 @@ async def get_rows(
     rows = [[None if v is None else display_value(v) for v in row] for row in page.itertuples(index=False)]
     # Spreadsheet row numbers of these rows (the index keeps each row's original position through cleaning).
     row_numbers = [int(i) + sess.header_row + 2 for i in page.index]
+    cell_flags: list[list[str]] | None = None
+    row_flags: list[str] | None = None
+    if flags:
+        vhash = version_hash(sess)
+        cached = db.scalars(
+            select(DataProfile).where(DataProfile.session_id == sess.id, DataProfile.version_hash == vhash)
+        ).first()
+        families = {c["name"]: c.get("family") for c in (cached.profile_json["column_profiles"] if cached else [])}
+        path = snapshots.snapshot_path(sess.dataset_id, sess.id, version)
+        dup_all = await run_in_threadpool(drilldown.duplicate_mask, df, (str(path), path.stat().st_mtime))
+        original = origins = None
+        if version != 0:
+            original = await run_in_threadpool(snapshots.load, sess.dataset_id, sess.id, 0)
+            ops = [
+                {"type": o.operation_type, "parameters": o.parameters_json}
+                for o in sess.operations
+                if o.status == "active"
+            ]
+            origins = column_origins(ops, [str(c) for c in original.columns])
+        cell_flags, row_flags = await run_in_threadpool(
+            drilldown.cell_flags, page, families, dup_all[offset : offset + limit], original, origins or {}
+        )
     return RowsOut(
         view=view,
         version=version,
@@ -172,7 +197,52 @@ async def get_rows(
         columns=[str(c) for c in df.columns],
         rows=rows,
         row_numbers=row_numbers,
+        cell_flags=cell_flags,
+        row_flags=row_flags,
     )
+
+
+@router.get("/sessions/{session_id}/issues/{issue_id}/rows", dependencies=[Depends(rate_limit("query"))])
+async def issue_rows(
+    session_id: str,
+    issue_id: str,
+    offset: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=200),
+    ws: Workspace = Depends(current_workspace),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """The rows an issue affects (drill-down from the Data Health Center). `issue_id` is "<code>:<column or *>"."""
+    sess = owned_session(db, ws, session_id)
+    code, _, col = issue_id.partition(":")
+    column = None if col in ("", "*") else col
+    if code in drilldown.NO_ROW_VIEW:
+        raise AppError(422, "NO_ROW_VIEW", "This issue is about the sheet structure, not particular rows.")
+    version = current_version(sess)
+    _require_snapshot(sess, version)
+    df = await run_in_threadpool(snapshots.load, sess.dataset_id, sess.id, version)
+    context = {"file_type": sess.dataset.file_type}
+    try:
+        mask = await run_in_threadpool(drilldown.issue_mask, df, code, column, context)
+    except KeyError:
+        raise AppError(404, "ISSUE_NOT_FOUND", "That issue does not exist for this dataset.") from None
+    hits = df[mask]
+    page = hits.iloc[offset : offset + limit]
+    # Show the issue's column first, then a few neighbours for context.
+    cols = ([column] if column else []) + [str(c) for c in df.columns if str(c) != column][: 6 if column else 7]
+    return {
+        "issue_id": issue_id,
+        "total": int(mask.sum()),
+        "offset": offset,
+        "columns": cols,
+        "highlight": column,
+        "rows": [
+            {
+                "row": int(i) + sess.header_row + 2,
+                "values": [None if page.at[i, c] is None else display_value(page.at[i, c]) for c in cols],
+            }
+            for i in page.index
+        ],
+    }
 
 
 @router.get("/sessions/{session_id}/profile", dependencies=[Depends(rate_limit("profile"))])
@@ -215,7 +285,15 @@ async def _compute_profile(db: Session, ws: Workspace, session_id: str, version:
         "formula_cells_without_cache": ws_row.formula_cells_without_cache if ws_row else 0,
     }
     db.rollback()  # no transaction held during the slow step
-    result = await run_in_threadpool(run_limited, profile_snapshot, dataset_id, sid, version, context)
+    try:
+        result = await run_in_threadpool(run_limited, profile_snapshot, dataset_id, sid, version, context)
+    except AppError:
+        db.expire_all()
+        fresh = db.get(AnalysisSession, sid)
+        if fresh is not None and current_version(fresh) != version:
+            # An undo or reset replaced this version while it was being analysed; its snapshot may be gone.
+            raise AppError(409, "VERSION_CHANGED", "The data changed while it was being analysed.") from None
+        raise
     cached = DataProfile(session_id=sid, version_hash=vhash, profile_json=result)
     db.add(cached)
     db.commit()

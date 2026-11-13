@@ -35,8 +35,12 @@ test("upload a multi-sheet workbook, pick sheet and header row, start a session"
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/upload-ready-${info.project.name}.png`, fullPage: true });
 
   await page.getByRole("button", { name: "Start analysis" }).click();
+  // Real stages: each one completes only when its request returns.
+  const stages = page.getByTestId("stage-list").last();
+  await expect(stages.locator('[data-stage="read"]')).toHaveAttribute("data-status", /active|done/);
   await expect(page).toHaveURL(/\/s\/[0-9a-f-]{36}\/health$/);
   await expect(page.getByTestId("session-file")).toHaveText("multi_sheet_sales.xlsx");
+  await expect(page.getByTestId("health-score")).toBeVisible(); // profile was already computed during the stages
 
   await page.goto("/workspace");
   const card = page.getByTestId("dataset-card").first();

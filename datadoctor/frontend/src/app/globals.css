@@ -270,3 +270,18 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Upload surface: slowly rotating gradient border (stops under reduced motion via the global rule above). */
+.dd-animated-border {
+  position: relative;
+  border-radius: 1.25rem;
+  padding: 1.5px;
+  background: conic-gradient(from var(--dd-angle), #3b82f6, #22d3ee, #8b5cf6, #14b8a6, #3b82f6);
+  animation: dd-border-spin 8s linear infinite;
+}
+.dd-animated-border[data-active="true"] {
+  animation-duration: 2.5s;
+}
+.dd-animated-border > .dd-animated-border-inner {
+  border-radius: calc(1.25rem - 1.5px);
+}

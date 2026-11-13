@@ -4,7 +4,7 @@ Read this first when continuing work. Source of truth: `SPEC.md` (approved) and 
 
 ## Status
 - Phase: **03 BUILD**. SPEC and PLAN approved 2026-11-12.
-- Current milestone: **UI upgrade stages 1–2 complete (U1–U7)**. The product owner delegated design and technical decisions on 2026-11-13 ("choose the best yourself"): milestones proceed without per-milestone approval, still with run/test/document/commit each time. Ask only before paid services, deployment, or deleting existing work. Next: U8 (Upload Studio redesign) → U9 (backend additions) → U10 → U11 → M9…
+- Current milestone: **UI upgrade stage 3 complete (U8–U11)**. The product owner delegated design and technical decisions on 2026-11-13 ("choose the best yourself"): milestones proceed without per-milestone approval, still with run/test/document/commit each time. Ask only before paid services, deployment, or deleting existing work. Next: M9 (analytics engine) → M10a chart theme → M10b Dashboard Studio → M11–M13 → U12–U14 → M14–M16 (see UI_PLAN.md).
 - Branch: `ccr-47143d17-8h5n17`. Push with `git push -u origin ccr-47143d17-8h5n17`.
 
 ## Workflow rules (from the product owner)
@@ -101,7 +101,7 @@ See PLAN.md §2 and §6.
 
 ## Known issues
 - Excel sheets are loaded fully by calamine at upload (dimensions), again for the first-rows peek, and once more at parse (4.6 s for 200k×10). Possible later optimisation: reuse the parse.
-- **Known flaky browser test:** `health.spec.ts › personal information…` failed twice in roughly 10 full-suite runs (once on tablet, once on mobile, each a 10 s wait). It was not reproducible in 45 isolated runs or in 4 full runs with tracing (tracing changes the timing). No server errors were logged. Suspected timing of the success toast under full parallel load. Retries were deliberately not enabled, so it is not hidden.
+- **Formerly flaky browser tests: root causes found and fixed (2026-11-13).** (1) Two parallel first requests each minted a workspace cookie and the later one won, so a just-uploaded dataset became "not found"; the client now sends its first workspace request alone (`lib/api.ts::send`, uploads wait via `workspaceSettled`). (2) pandas builds index lookup tables lazily and two request threads sharing a cached snapshot could hit a spurious `KeyError`; `snapshots.load` now warms them before caching (`tests/unit/test_snapshots.py`). (3) Profiling a version that an undo/reset removed mid-flight now returns 409 `VERSION_CHANGED` instead of 500. Three consecutive clean full runs afterwards. Retries remain off.
 - Undo after many steps on a large sheet may need a replay from the original (bounded by the 60 s worker limit). The 3 newest versions are always on disk.
 - There is no "redo": undone steps stay in the history but are re-done by applying them again.
 - Excel-saved formula count (Q15) covers the whole sheet, including rows above the header.
@@ -135,11 +135,18 @@ See PLAN.md §2 and §6.
   - Found and fixed: browser Back after a hash link left the wrong page on screen (plain `<a href="#…">` → `next/link`).
   - Measured: landing first-load JS 251 kB (budget 200 kB gzip refers to transfer size; to be measured properly in U14); 3D scene interactive ~0.8 s after load in this environment (software WebGL); no console errors; three.js absent from workspace pages (test).
   - Tests: pytest 184, vitest 84, Playwright 146 passed + 2 desktop-only skips across 4 widths (one load-related flake in a full run, passes alone; see Known issues).
+- **UI upgrade U8–U11** (2026-11-13):
+  - U8 Upload Studio: animated-border drop zone, real stage list (read → profile → open; no invented percentages), recent-session cards, profile pre-warmed before navigating to Data Health.
+  - U9 backend (read-only additions): `missing_map` in the profile (≤50 row buckets × columns), `GET /sessions/{id}/rows?flags=true` (cell flags m = missing, i = invalid, c = changed by cleaning; row flag d = exact duplicate), `GET /sessions/{id}/issues/{code:column}/rows` drill-down, `services/cleaning/lineage.py::column_origins`. `PROFILE_SCHEMA` = 4.
+  - U10 Data Health Center: 270° score gauge (count-up, static under reduced motion), stat tiles, missing-value heatmap, type/quality/severity distributions, issue drill-down dialog with the affected rows.
+  - U11 Cleaning Studio: three-panel layout on very wide screens, grid cell markers + legend, arrow-key/Home/End grid navigation with a live region, grid height fits short tables.
+  - Found and fixed: grid kept stale rows after a change that did not alter the row count (page cache cleared but not reloaded); the three concurrency bugs listed under Known issues.
+  - Not done from UI_PLAN U11: "only rows with issues" grid filter (issue drill-down covers the need for now).
+  - Tests: pytest 193, vitest 84, Playwright 158 passed + 2 desktop-only skips across 4 widths, three consecutive clean full runs. `make lint` and `make audit` clean.
 
 ## Pending
-- `DESIGN_SPEC.md`: direction **A "The Refinery"** chosen by the product owner (2026-11-13). `UI_PLAN.md` drafted and **awaiting approval**; it assumes order (a), the new libraries, the three read-only backend additions and the `#2563EB` button fill (listed at the top of UI_PLAN.md for confirmation). No UI code until it is approved; first milestone would be U1 (design tokens and theme).
-- Product-owner approval of M8, then M9: `analytics.query()` (count/sum/avg/min/max/median/distinct, group-by, date grain, filters incl. date range, sort, top-N, 500-point cap) used later by dashboard, AI and exports; aggregation/type compatibility rules shared with the frontend; rule-based chart recommendations (SPEC §12.4); dashboard configuration persistence. Tests compare every aggregation with an independent pandas calculation.
-- Revisit in M14: the known flaky browser test (see Known issues), as agreed with the product owner (option a).
+- `DESIGN_SPEC.md` direction A and `UI_PLAN.md` are in force (decisions delegated).
+- Next, M9: `analytics.query()` (count/sum/avg/min/max/median/distinct, group-by, date grain, filters incl. date range, sort, top-N, 500-point cap) used later by dashboard, AI and exports; aggregation/type compatibility rules shared with the frontend; rule-based chart recommendations (SPEC §12.4); dashboard configuration persistence. Tests compare every aggregation with an independent pandas calculation.
 - Later (landing page): a genuine "Try with sample data" demo once upload works (M4) and sample datasets exist (M14).
 
 ## How to continue

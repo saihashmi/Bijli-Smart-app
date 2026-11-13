@@ -23,6 +23,7 @@ from ..middleware.workspace import current_workspace, owned_session
 from ..models import AnalysisSession, AuditEvent, CleaningOperation, Workspace, utcnow
 from ..schemas.datasets import CleaningRequest, OperationOut, ResetRequest
 from ..services.cleaning import engine
+from ..services.cleaning.lineage import column_origins
 from ..services.cleaning.ops import _same, category_suggestions
 from ..services.cleaning.registry import REGISTRY, catalogue
 from ..services.cleaning.replay import materialize_task, prune
@@ -333,16 +334,8 @@ def timeline(
 
 
 def _column_origins(sess: AnalysisSession, original_columns: list[str]) -> dict[str, str]:
-    """current column name → original column name, following active renames and removals."""
-    names = {c: c for c in original_columns}  # original → current
-    for op in _active(sess):
-        if op.operation_type == "rename_columns":
-            mapping = op.parameters_json.get("mapping") or {}
-            names = {orig: mapping.get(cur, cur) for orig, cur in names.items()}
-        elif op.operation_type == "remove_columns":
-            gone = set(op.parameters_json.get("columns") or [])
-            names = {orig: cur for orig, cur in names.items() if cur not in gone}
-    return {cur: orig for orig, cur in names.items()}
+    ops = [{"type": op.operation_type, "parameters": op.parameters_json} for op in _active(sess)]
+    return column_origins(ops, original_columns)
 
 
 @router.get("/sessions/{session_id}/compare", dependencies=[Depends(rate_limit("query"))])

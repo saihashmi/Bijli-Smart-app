@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertTriangle, ArrowRight, FileSpreadsheet, Info, Loader2, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
-import { api, ApiError, uploadFile, type Dataset, type Peek } from "@/lib/api";
+import Link from "next/link";
+import { api, ApiError, uploadFile, type AnalysisSession, type Dataset, type Peek } from "@/lib/api";
 import { formatBytes, formatDate, precheckFile } from "@/lib/format";
 import { useSettings } from "@/lib/use-preferences";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -14,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dropzone } from "./dropzone";
+import { StageList, type Stage, type StageStatus } from "./stage-list";
 import { HeaderRowPreview } from "./header-row-preview";
 import { SheetPicker } from "./sheet-picker";
 
@@ -36,8 +38,13 @@ export function UploadStudio() {
   const [peek, setPeek] = useState<Peek | null>(null);
   const [peekError, setPeekError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
+  const [analysis, setAnalysis] = useState<Record<string, StageStatus> | null>(null);
+  const [recent, setRecent] = useState<AnalysisSession[]>([]);
   const abort = useRef<AbortController | null>(null);
   const loadedId = useRef<string | null>(null);
+  useEffect(() => {
+    api.sessions().then((list) => setRecent(list.slice(0, 3))).catch(() => setRecent([]));
+  }, []);
   const maxMb = settings?.system.max_upload_mb ?? null;
   const prefs = settings?.preferences;
 
@@ -105,12 +112,20 @@ export function UploadStudio() {
   async function start(ds: Dataset) {
     if (sheet === null) return;
     setStarting(true);
+    // Each stage below is a real request; it turns "done" only when that request returns.
+    setAnalysis({ read: "active", profile: "pending", open: "pending" });
+    let step: "read" | "profile" = "read";
     try {
       const sess = await api.createSession(ds.id, sheet, headerRow);
+      step = "profile";
+      setAnalysis({ read: "done", profile: "active", open: "pending" });
+      await api.profile(sess.id); // computed once and cached; the Data Health Center reuses it
+      setAnalysis({ read: "done", profile: "done", open: "active" });
       toast.success(`“${sess.sheet_name}” is ready: ${sess.rows?.toLocaleString("en-US")} rows`);
       router.push(`/s/${sess.id}/health`);
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Could not start the analysis.");
+      setAnalysis((a) => (a ? { ...a, [step]: "error" } : a));
+      setError({ title: "The analysis could not start", message: e instanceof ApiError ? e.message : "Unknown error." });
       setStarting(false);
     }
   }
@@ -135,6 +150,32 @@ export function UploadStudio() {
 
       {phase.kind === "pick" && <Dropzone maxMb={maxMb} onFile={handleFile} />}
 
+      {phase.kind === "pick" && !resumeId && recent.length > 0 && (
+        <section aria-labelledby="recent-heading" className="space-y-3">
+          <h2 id="recent-heading" className="text-sm font-semibold text-muted-foreground">
+            Recent sessions
+          </h2>
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {recent.map((r) => (
+              <li key={r.id}>
+                <Link
+                  href={`/s/${r.id}/health`}
+                  className="flex items-center gap-3 rounded-xl border bg-card p-4 transition-all duration-200 outline-none hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <FileSpreadsheet className="size-8 shrink-0 text-primary dark:text-link" aria-hidden />
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium">{r.original_filename}</span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {r.sheet_name} · {(r.rows ?? 0).toLocaleString("en-US")} rows × {r.columns ?? 0} columns
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {(phase.kind === "uploading" || phase.kind === "processing") && (
         <Card aria-live="polite">
           <CardContent className="space-y-4 py-2">
@@ -158,6 +199,17 @@ export function UploadStudio() {
             <Progress
               aria-label="Upload progress"
               value={phase.kind === "uploading" ? Math.round((phase.loaded / Math.max(1, phase.total)) * 100) : 100}
+            />
+            <StageList
+              stages={[
+                {
+                  key: "upload",
+                  label: "Uploading the file",
+                  status: phase.kind === "uploading" ? "active" : "done",
+                  detail: phase.kind === "uploading" ? `${formatBytes(phase.loaded)} of ${formatBytes(phase.total)}` : undefined,
+                },
+                { key: "validate", label: "Validating the file and reading its worksheets", status: phase.kind === "processing" ? "active" : "pending" },
+              ]}
             />
           </CardContent>
         </Card>
@@ -237,11 +289,24 @@ export function UploadStudio() {
               {sheet !== null && !peek && !peekError && <Skeleton className="h-64" />}
               {peek && <HeaderRowPreview peek={peek} headerRow={headerRow} onHeaderRow={setHeaderRow} />}
               <div className="flex flex-wrap items-center gap-3 border-t pt-5">
-                <Button size="lg" disabled={sheet === null || !peek || starting} onClick={() => start(phase.dataset)}>
-                  {starting ? <Loader2 className="animate-spin" /> : <ArrowRight />} {starting ? "Reading the sheet…" : "Start analysis"}
+                <Button size="lg" variant="gradient" disabled={sheet === null || !peek || starting} onClick={() => start(phase.dataset)}>
+                  {starting ? <Loader2 className="animate-spin" /> : <ArrowRight />} Start analysis
                 </Button>
                 <span className="text-sm text-muted-foreground">Creates an analysis session. Your original file stays unchanged.</span>
               </div>
+              {analysis && (
+                <div className="rounded-xl border bg-surface-2/50 p-4" aria-live="polite">
+                  <StageList
+                    stages={(
+                      [
+                        ["read", "Reading the sheet"],
+                        ["profile", "Profiling columns and detecting issues"],
+                        ["open", "Opening the Data Health Center"],
+                      ] as const
+                    ).map(([key, label]): Stage => ({ key, label, status: analysis[key] }))}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

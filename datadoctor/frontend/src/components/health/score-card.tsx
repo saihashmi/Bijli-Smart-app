@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { animate, useReducedMotion } from "motion/react";
 import { Calculator } from "lucide-react";
 import type { Health } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -19,21 +21,53 @@ const BAND_STYLE: Record<Health["band"], { stroke: string; text: string }> = {
   Poor: { stroke: "var(--destructive)", text: "text-destructive-text" },
 };
 
-function Gauge({ score, stroke }: { score: number; stroke: string }) {
-  // Semicircle: radius 80, length π·80.
-  const length = Math.PI * 80;
+const R = 84;
+const CIRC = 2 * Math.PI * R;
+const SWEEP = 0.75; // 270° gauge
+
+/** Circular gauge with one reveal animation (instant when reduced motion is requested). */
+function Gauge({ score, stroke, band, bandClass }: { score: number; stroke: string; band: string; bandClass: string }) {
+  const reduce = useReducedMotion();
+  const [shown, setShown] = useState(reduce ? score : 0);
+  useEffect(() => {
+    if (reduce) {
+      setShown(score);
+      return;
+    }
+    const controls = animate(0, score, { duration: 0.9, ease: [0.22, 1, 0.36, 1], onUpdate: (v) => setShown(Math.round(v)) });
+    return () => controls.stop();
+  }, [score, reduce]);
+
   return (
-    <svg viewBox="0 0 200 112" className="w-full max-w-56" aria-hidden>
-      <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="var(--muted)" strokeWidth="16" strokeLinecap="round" />
-      <path
-        d="M 20 100 A 80 80 0 0 1 180 100"
-        fill="none"
-        stroke={stroke}
-        strokeWidth="16"
-        strokeLinecap="round"
-        strokeDasharray={`${(score / 100) * length} ${length}`}
-      />
-    </svg>
+    <div className="relative mx-auto aspect-square w-full max-w-60" role="img" aria-label={`Data Health Score ${score} out of 100: ${band}`}>
+      <svg viewBox="0 0 200 200" className="size-full -rotate-[225deg]" aria-hidden>
+        <circle cx="100" cy="100" r={R} fill="none" stroke="var(--muted)" strokeWidth="14" strokeLinecap="round" strokeDasharray={`${CIRC * SWEEP} ${CIRC}`} />
+        <circle
+          cx="100"
+          cy="100"
+          r={R}
+          fill="none"
+          stroke={stroke}
+          strokeWidth="14"
+          strokeLinecap="round"
+          strokeDasharray={`${CIRC * SWEEP * (shown / 100)} ${CIRC}`}
+          style={{ filter: `drop-shadow(0 0 8px ${stroke})` }}
+        />
+      </svg>
+      <div className="absolute inset-0 grid place-items-center text-center">
+        <div>
+          <p className="text-6xl leading-none font-bold tracking-tight tabular-nums" data-testid="health-score" aria-hidden>
+            {shown}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground" aria-hidden>
+            out of 100
+          </p>
+          <p className={cn("mt-1.5 text-sm font-semibold", bandClass)} aria-hidden>
+            {band}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -49,21 +83,13 @@ export function ScoreCard({ health }: { health: Health | null }) {
     );
   const style = BAND_STYLE[health.band];
   return (
-    <Card data-testid="score-card">
+    <Card data-testid="score-card" className="h-full">
       <CardHeader>
         <CardTitle>Data Health Score</CardTitle>
         <CardDescription>Structural quality of this sheet, from 0 to 100.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
-        <div className="relative mx-auto flex max-w-56 flex-col items-center">
-          <Gauge score={health.score} stroke={style.stroke} />
-          <div className="absolute inset-x-0 bottom-0 text-center">
-            <p className="text-4xl font-bold tabular-nums" data-testid="health-score">
-              {health.score}
-            </p>
-            <p className={cn("text-sm font-semibold", style.text)}>{health.band}</p>
-          </div>
-        </div>
+        <Gauge score={health.score} stroke={style.stroke} band={health.band} bandClass={style.text} />
 
         <ul className="space-y-3" aria-label="Score breakdown">
           {health.components.map((c) => (
@@ -75,7 +101,7 @@ export function ScoreCard({ health }: { health: Health | null }) {
                 </span>
               </div>
               <div className="mt-1 h-1.5 rounded-full bg-muted" aria-hidden>
-                <div className="h-1.5 rounded-full bg-primary" style={{ width: `${c.value * 100}%` }} />
+                <div className="h-1.5 rounded-full bg-brand-gradient" style={{ width: `${c.value * 100}%` }} />
               </div>
               <p className="mt-0.5 text-xs text-muted-foreground">{c.explanation}</p>
             </li>
@@ -84,7 +110,7 @@ export function ScoreCard({ health }: { health: Health | null }) {
 
         <details className="group rounded-lg border bg-muted/40 px-3 py-2 text-sm">
           <summary className="flex cursor-pointer items-center gap-2 font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            <Calculator className="size-4 text-teal" aria-hidden /> How is this calculated?
+            <Calculator className="size-4 text-teal-text" aria-hidden /> How is this calculated?
           </summary>
           <div className="mt-2 space-y-2 text-xs text-muted-foreground">
             <p className="font-mono text-[11px] text-foreground">{health.formula}</p>

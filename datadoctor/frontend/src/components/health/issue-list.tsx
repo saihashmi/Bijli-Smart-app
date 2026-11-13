@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Lightbulb, Loader2, ShieldCheck, Wand2 } from "lucide-react";
+import { CheckCircle2, Lightbulb, Loader2, Rows3, ShieldCheck, Wand2 } from "lucide-react";
 import type { Issue, Severity } from "@/lib/api";
 import { formatInteger } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { NativeSelect } from "@/components/ui/native-select";
+import { SeverityBadge } from "@/components/ui/severity-badge";
+import { IssueRowsDialog } from "./issue-rows-dialog";
 
 const SEVERITY: Record<Severity, { label: string; variant: "destructive" | "warning" | "secondary" }> = {
   high: { label: "High", variant: "destructive" },
@@ -30,6 +32,7 @@ export function IssueList({
 }) {
   const [severity, setSeverity] = useState<Severity | "all">("all");
   const [column, setColumn] = useState("");
+  const [drill, setDrill] = useState<Issue | null>(null);
   const columns = useMemo(() => [...new Set(issues.map((i) => i.column).filter(Boolean))] as string[], [issues]);
   const counts = useMemo(() => {
     const c = { all: issues.length, high: 0, medium: 0, low: 0 };
@@ -87,7 +90,7 @@ export function IssueList({
             <Card className="gap-3 py-4" data-testid="issue">
               <CardContent className="space-y-3 px-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant={SEVERITY[issue.severity].variant}>{SEVERITY[issue.severity].label}</Badge>
+                  <SeverityBadge severity={issue.severity} />
                   <h3 className="font-semibold">{issue.title}</h3>
                   {issue.column ? (
                     <Badge variant="outline" className="font-mono">
@@ -116,23 +119,27 @@ export function IssueList({
                   </div>
                 )}
                 <div className="flex flex-wrap items-center gap-2 border-t pt-3 text-sm">
-                  <Lightbulb className="size-4 text-teal" aria-hidden />
+                  <Lightbulb className="size-4 text-teal-text" aria-hidden />
                   <span>
                     <span className="text-muted-foreground">Suggested: </span>
                     {issue.suggested_action.label}
                   </span>
+                  {!["Q14", "Q15"].includes(issue.code) && (
+                    <Button size="sm" variant="ghost" className="ml-auto" onClick={() => setDrill(issue)}>
+                      <Rows3 /> Show affected rows
+                    </Button>
+                  )}
                   {issue.suggested_action.operation === "mark_sensitive" && issue.column ? (
                     <Button
                       size="sm"
                       variant="outline"
-                      className="ml-auto"
                       disabled={busyColumn === issue.column}
                       onClick={() => onMarkSensitive(issue.column!)}
                     >
                       {busyColumn === issue.column ? <Loader2 className="animate-spin" /> : <ShieldCheck />} Mark as sensitive
                     </Button>
                   ) : issue.suggested_action.operation ? (
-                    <Button asChild size="sm" variant="outline" className="ml-auto">
+                    <Button asChild size="sm" variant="outline" className={["Q14", "Q15"].includes(issue.code) ? "ml-auto" : ""}>
                       <Link
                         href={`/s/${sessionId}/clean?op=${issue.suggested_action.operation}${issue.column ? `&column=${encodeURIComponent(issue.column)}` : ""}`}
                       >
@@ -147,6 +154,7 @@ export function IssueList({
         ))}
       </ul>
       {shown.length === 0 && <p className="text-sm text-muted-foreground">No issues match these filters.</p>}
+      <IssueRowsDialog sessionId={sessionId} issue={drill} onClose={() => setDrill(null)} />
     </div>
   );
 }

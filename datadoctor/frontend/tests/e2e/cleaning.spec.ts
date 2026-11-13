@@ -145,3 +145,35 @@ test("undo, reset, before/after and the audit timeline", async ({ page }, info) 
   await expect(timeline.getByText("Undone", { exact: true })).toHaveCount(2); // both steps kept in history, marked undone
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/timeline-${info.project.name}.png`, fullPage: true });
 });
+
+test("grid marks problem cells, shows a legend and supports arrow-key navigation", async ({ page }, info) => {
+  const base = await openSession(page);
+  await page.goto(`${base}/clean`);
+  const grid = page.getByTestId("data-grid");
+  await expect(page.getByTestId("grid-legend")).toContainText("Missing value");
+  await expect(page.getByTestId("grid-legend")).toContainText("Duplicate row");
+  // Markers come from the server's per-cell flags (not from colour alone: each has a shape and a tooltip).
+  await expect(grid.locator('[data-flags*="m"]').first()).toBeVisible();
+  await expect(grid.locator('[data-flags*="i"]')).toHaveCount(1); // 31/02/2026
+  await expect(grid.getByRole("rowheader").filter({ hasText: "DUP" })).toHaveCount(2);
+
+  await grid.focus();
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  await expect(page.getByTestId("grid-active")).toHaveText("Row 3, City:  lahore");
+  await expect(grid.locator('[aria-selected="true"]')).toHaveCount(1);
+  await page.keyboard.press("Control+End");
+  await expect(page.getByTestId("grid-active")).toContainText("Row 9, Notes: empty (missing value)");
+
+  // After a fix, the changed cell is marked as corrected; undo removes the marker.
+  await page.goto(`${base}/clean?op=trim_whitespace`);
+  await page.getByRole("button", { name: "Preview on full data" }).click();
+  await page.getByRole("button", { name: "Apply change" }).click();
+  await expect(page.getByText("Cleaned · v1")).toBeVisible();
+  await expect(grid.locator('[data-flags*="c"]')).toHaveCount(1);
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/clean-new-${info.project.name}.png`, fullPage: true });
+  await page.getByRole("button", { name: "Undo last change" }).click();
+  await expect(page.getByText("Original data", { exact: true })).toBeVisible();
+  await expect(grid.locator('[data-flags*="c"]')).toHaveCount(0);
+});

@@ -235,9 +235,10 @@ export function CleaningStudio() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="grid items-start gap-6 lg:grid-cols-[17rem_minmax(0,1fr)]">
+      {/* Wide screens: tools | data grid | fix panel. Smaller screens: tools, fix panel, then the grid. */}
+      <div className="grid items-start gap-6 lg:grid-cols-[16rem_minmax(0,1fr)] 2xl:grid-cols-[16rem_minmax(0,1fr)_26rem]">
         {/* Tool palette */}
-        <Card className="gap-2 py-4">
+        <Card className="gap-2 py-4 2xl:sticky 2xl:top-20">
           <CardHeader className="px-4">
             <CardTitle className="text-sm">Cleaning tools</CardTitle>
           </CardHeader>
@@ -291,7 +292,7 @@ export function CleaningStudio() {
         </Card>
 
         {/* Operation form + preview */}
-        <Card className="min-w-0">
+        <Card className="min-w-0 2xl:order-3 2xl:sticky 2xl:top-20 2xl:max-h-[calc(100vh-6rem)] 2xl:overflow-y-auto" data-testid="fix-panel">
           {!spec ? (
             <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
               <Wand2 className="size-10 text-primary" aria-hidden />
@@ -364,6 +365,44 @@ export function CleaningStudio() {
             </>
           )}
         </Card>
+        <div className="min-w-0 lg:col-span-2 2xl:order-2 2xl:col-span-1" data-testid="grid-panel">
+          <Tabs defaultValue="current">
+            <TabsList>
+              <TabsTrigger value="current">
+                <Rows3 aria-hidden /> Current data
+              </TabsTrigger>
+              <TabsTrigger value="original">
+                <Eye aria-hidden /> Original
+              </TabsTrigger>
+              <TabsTrigger value="compare">
+                <ArrowLeftRight aria-hidden /> Before / after
+              </TabsTrigger>
+              <TabsTrigger value="history">
+                <History aria-hidden /> History ({timeline?.events.length ?? 0})
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="current">
+              <DataGrid
+                sessionId={session.id}
+                columns={session.column_names}
+                total={session.rows ?? 0}
+                version={session.version}
+                profiles={profile?.column_profiles}
+                showFlags
+                height="64vh"
+              />
+            </TabsContent>
+            <TabsContent value="original">
+              <OriginalGrid sessionId={session.id} />
+            </TabsContent>
+            <TabsContent value="compare">
+              <CompareView sessionId={session.id} columns={session.column_names} version={session.version} />
+            </TabsContent>
+            <TabsContent value="history">
+              {timeline ? <HistoryTimeline timeline={timeline} /> : <Skeleton className="h-32" />}
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
@@ -388,34 +427,7 @@ export function CleaningStudio() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Tabs defaultValue="current">
-        <TabsList>
-          <TabsTrigger value="current">
-            <Rows3 aria-hidden /> Current data
-          </TabsTrigger>
-          <TabsTrigger value="original">
-            <Eye aria-hidden /> Original
-          </TabsTrigger>
-          <TabsTrigger value="compare">
-            <ArrowLeftRight aria-hidden /> Before / after
-          </TabsTrigger>
-          <TabsTrigger value="history">
-            <History aria-hidden /> History ({timeline?.events.length ?? 0})
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="current">
-          <DataGrid sessionId={session.id} columns={session.column_names} total={session.rows ?? 0} version={session.version} />
-        </TabsContent>
-        <TabsContent value="original">
-          <OriginalGrid sessionId={session.id} />
-        </TabsContent>
-        <TabsContent value="compare">
-          <CompareView sessionId={session.id} columns={session.column_names} version={session.version} />
-        </TabsContent>
-        <TabsContent value="history">
-          {timeline ? <HistoryTimeline timeline={timeline} /> : <Skeleton className="h-32" />}
-        </TabsContent>
-      </Tabs>
+
     </div>
   );
 }

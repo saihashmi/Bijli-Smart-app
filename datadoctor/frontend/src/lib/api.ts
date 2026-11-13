@@ -29,11 +29,43 @@ export const activity = {
   get: () => inFlight,
 };
 
+/**
+ * The server hands out the workspace cookie on the first request that needs one. If several first requests
+ * race, each gets a different workspace and the last cookie wins, orphaning anything created with the others.
+ * So the first such request goes out alone and the rest wait for it.
+ */
+let workspaceReady = false;
+let workspaceGate: Promise<void> | null = null;
+
+async function send(path: string, init: RequestInit): Promise<Response> {
+  const go = () => fetch(`/api${path}`, { cache: "no-store", credentials: "same-origin", ...init });
+  if (workspaceReady || path.startsWith("/health")) return go();
+  if (workspaceGate) {
+    await workspaceGate;
+    return send(path, init);
+  }
+  let open!: () => void;
+  workspaceGate = new Promise<void>((resolve) => (open = resolve));
+  try {
+    const res = await go();
+    workspaceReady = true; // any HTTP response has been through the workspace check
+    return res;
+  } finally {
+    workspaceGate = null;
+    open();
+  }
+}
+
+/** Resolves once no first request is in flight, so a following upload reuses the same workspace. */
+async function workspaceSettled(): Promise<void> {
+  while (workspaceGate) await workspaceGate;
+}
+
 export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   let res: Response;
   bump(1);
   try {
-    res = await fetch(`/api${path}`, { cache: "no-store", credentials: "same-origin", ...init });
+    res = await send(path, init);
   } catch {
     throw new ApiError(0, "NETWORK_ERROR", "Cannot reach the DataDoctor server. Is it running?");
   } finally {
@@ -166,6 +198,8 @@ export type RowsPage = {
   columns: string[];
   rows: (string | null)[][];
   row_numbers: number[];
+  cell_flags: string[][] | null;
+  row_flags: string[] | null;
 };
 
 export type OpField = {
@@ -319,6 +353,15 @@ export type Issue = {
   details: Record<string, unknown>;
 };
 
+export type IssueRows = {
+  issue_id: string;
+  total: number;
+  offset: number;
+  columns: string[];
+  highlight: string | null;
+  rows: { row: number; values: (string | null)[] }[];
+};
+
 export type HealthComponent = { key: string; value: number; weight: number; points: number; explanation: string };
 
 export type Health = {
@@ -343,6 +386,7 @@ export type Profile = {
   empty_columns: number;
   column_profiles: ColumnProfile[];
   issues: Issue[];
+  missing_map?: { buckets: number; bucket_rows: number; columns: string[]; values: number[][] };
   issue_counts: Record<Severity, number>;
   health: Health | null;
   sensitive_columns: string[];
@@ -380,7 +424,13 @@ export function uploadFile(
     signal?.addEventListener("abort", () => xhr.abort());
     const form = new FormData();
     form.append("file", file);
-    xhr.send(form);
+    void workspaceSettled().then(() => {
+      if (signal?.aborted) {
+        bump(-1);
+        return reject(new ApiError(0, "ABORTED", "Upload cancelled."));
+      }
+      xhr.send(form);
+    });
   });
 }
 
@@ -420,8 +470,10 @@ export const api = {
     opts.columns.forEach((c) => q.append("columns", c));
     return request<Comparison>(`/sessions/${id}/compare?${q}`);
   },
-  rows: (id: string, offset: number, limit: number, view: "current" | "original" = "current") =>
-    request<RowsPage>(`/sessions/${id}/rows?view=${view}&offset=${offset}&limit=${limit}`),
+  rows: (id: string, offset: number, limit: number, view: "current" | "original" = "current", flags = false) =>
+    request<RowsPage>(`/sessions/${id}/rows?view=${view}&offset=${offset}&limit=${limit}${flags ? "&flags=true" : ""}`),
+  issueRows: (id: string, issueId: string, offset: number, limit = 50) =>
+    request<IssueRows>(`/sessions/${id}/issues/${encodeURIComponent(issueId)}/rows?offset=${offset}&limit=${limit}`),
   profile: (id: string) => request<Profile>(`/sessions/${id}/profile`),
   setSensitive: (id: string, columns: string[]) =>
     request<{ sensitive_columns: string[] }>(`/sessions/${id}/sensitive-columns`, json("PUT", { columns })),
