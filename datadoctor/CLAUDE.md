@@ -4,7 +4,7 @@ Read this first when continuing work. Source of truth: `SPEC.md` (approved) and 
 
 ## Status
 - Phase: **03 BUILD**. SPEC and PLAN approved 2026-11-12.
-- Current milestone: **UI upgrade stage 3 complete (U8–U11)**. The product owner delegated design and technical decisions on 2026-11-13 ("choose the best yourself"): milestones proceed without per-milestone approval, still with run/test/document/commit each time. Ask only before paid services, deployment, or deleting existing work. Next: M9 (analytics engine) → M10a chart theme → M10b Dashboard Studio → M11–M13 → U12–U14 → M14–M16 (see UI_PLAN.md).
+- Current milestone: **M9 analytics engine complete** (after UI stage 3, U8–U11). The product owner delegated design and technical decisions on 2026-11-13 ("choose the best yourself"): milestones proceed without per-milestone approval, still with run/test/document/commit each time. Ask only before paid services, deployment, or deleting existing work. Next: M10a chart theme → M10b Dashboard Studio → M11–M13 → U12–U14 → M14–M16 (see UI_PLAN.md).
 - Branch: `ccr-47143d17-8h5n17`. Push with `git push -u origin ccr-47143d17-8h5n17`.
 
 ## Workflow rules (from the product owner)
@@ -143,10 +143,11 @@ See PLAN.md §2 and §6.
   - Found and fixed: grid kept stale rows after a change that did not alter the row count (page cache cleared but not reloaded); the three concurrency bugs listed under Known issues.
   - Not done from UI_PLAN U11: "only rows with issues" grid filter (issue drill-down covers the need for now).
   - Tests: pytest 193, vitest 84, Playwright 158 passed + 2 desktop-only skips across 4 widths, three consecutive clean full runs. `make lint` and `make audit` clean.
+- **M9. Analytics engine and chart recommendations** (2026-11-13): `services/analytics/typed.py` (typed column views built from the same `classify` as profiling; cached per snapshot frame), `query.py` (one `run()` for aggregate / histogram / scatter / table queries; count, sum, avg, min, max, median, distinct; category, numeric and date-grain grouping; series split (top 12 + Other); in / not_in / range / date_range filters; sort; top-N with a **recomputed** "Other"; 500-point cap), `recommend.py` (field catalogue with allowed aggregations, §12.4 recommendations with reasons, sensitive columns left out, ID-like columns not used as measures). API: `GET …/analytics/fields`, `POST …/analytics/query` (batch of ≤16, dashboard-wide filters, per-query errors), `GET …/analytics/recommendations`, `GET/PUT/DELETE …/dashboard` (validated config: theme, filters, widgets; reports widgets whose columns were removed). Semantics: missing/non-numeric cells are never zero (left out and counted in `meta`), ambiguous/impossible dates are in no period (counted), a group with no usable values is null, "count of a column" = non-empty cells, spelling variants are separate groups until cleaned, weeks start Monday. Tests compare every aggregation, grain, filter, histogram and correlation with independent pandas/numpy calculations. Measured on 200k rows: typing 5 columns 1.3 s once, then 0.01–0.25 s per query. Tests: pytest 240.
 
 ## Pending
 - `DESIGN_SPEC.md` direction A and `UI_PLAN.md` are in force (decisions delegated).
-- Next, M9: `analytics.query()` (count/sum/avg/min/max/median/distinct, group-by, date grain, filters incl. date range, sort, top-N, 500-point cap) used later by dashboard, AI and exports; aggregation/type compatibility rules shared with the frontend; rule-based chart recommendations (SPEC §12.4); dashboard configuration persistence. Tests compare every aggregation with an independent pandas calculation.
+- Next, M10a/M10b: chart theme (`lib/chart-theme.ts`), Recharts components, Dashboard Studio (grid, widget editor, filters, drill-down, PNG export, three themes), all figures from `POST …/analytics/query`.
 - Later (landing page): a genuine "Try with sample data" demo once upload works (M4) and sample datasets exist (M14).
 
 ## How to continue
