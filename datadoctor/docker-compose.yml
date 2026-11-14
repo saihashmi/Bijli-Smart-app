@@ -1,0 +1,47 @@
+# DataDoctor AI, local single-user mode.   docker compose up --build   → http://localhost:3000
+#
+# NOT for public internet hosting: there is no user login. Ports are bound to this computer only (127.0.0.1).
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      STORAGE_DIR: /data
+      SAMPLES_DIR: /srv/sample-data
+    volumes:
+      - datadoctor-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    # The API is reachable only from the web container, not from the host or the network.
+    expose: ["8000"]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        BACKEND_URL: http://backend:8000
+        MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-20}
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /srv/frontend/.next/cache
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+
+volumes:
+  datadoctor-data:

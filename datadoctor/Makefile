@@ -1,5 +1,5 @@
 # DataDoctor AI developer commands. Run from datadoctor/.
-.PHONY: setup backend frontend test test-backend test-frontend e2e lint audit
+.PHONY: setup backend frontend test test-backend test-frontend e2e lint audit docker-up docker-down samples
 
 setup:
 	cd backend && python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
@@ -29,3 +29,12 @@ lint:
 audit:
 	cd backend && .venv/bin/pip-audit -r requirements.txt
 	cd frontend && npm audit
+
+docker-up:        ## whole app in containers on http://localhost:3000
+	docker compose up --build -d
+
+docker-down:
+	docker compose down
+
+samples:          ## regenerate the synthetic sample datasets
+	backend/.venv/bin/python sample-data/generate.py

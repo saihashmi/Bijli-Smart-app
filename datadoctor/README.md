@@ -38,6 +38,23 @@ make frontend               # terminal 2: app on http://localhost:3000
 
 Open http://localhost:3000. No file to hand? The Upload Studio offers five synthetic sample datasets (see [`sample-data/`](sample-data/README.md)). Data is stored under `STORAGE_DIR` (default `backend/storage`): uploads, working snapshots, exports and a SQLite file with metadata only.
 
+### With Docker
+
+```bash
+cd datadoctor
+docker compose up --build        # then open http://localhost:3000
+```
+
+Both containers run as non-root users with a read-only filesystem and no extra privileges. Data lives in the `datadoctor-data` volume. The web port is bound to `127.0.0.1` only and the API is not published at all, because this build has no user login. `docker compose down` stops it; add `-v` to also delete the stored data.
+
+Behind a TLS-inspecting company proxy, give the build its CA certificate instead of switching verification off:
+
+```bash
+docker build --secret id=ca,src=/path/to/ca.crt -f backend/Dockerfile  -t datadoctor-backend .
+docker build --secret id=ca,src=/path/to/ca.crt -f frontend/Dockerfile -t datadoctor-frontend .
+docker compose up --no-build
+```
+
 ### Optional: AI explanations
 
 Set `GROQ_API_KEY` in `.env` and restart the backend. Without it the AI Analyst uses its built-in interpreter and guided builder, and every calculation still works. Using Groq may cost money on your Groq account, and sends the items listed under [What leaves your computer](#what-leaves-your-computer).
