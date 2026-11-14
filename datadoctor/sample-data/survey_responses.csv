@@ -1,0 +1,501 @@
+Response ID,Submitted,City,Age Group,Satisfaction,Would Recommend,Comment
+R0001,13/03/2026,,25-34,Neutral,Yes,
+R0002,06/03/2026,Islamabad,35-44,Dissatisfied,Maybe,Too slow
+R0003,02/04/2026,Peshawar,45-54,Neutral,Maybe,Too slow
+R0004,10/04/2026,Quetta,18-24,Neutral,Yes,
+R0005,01/03/2026,Quetta,55+,Dissatisfied,Yes,
+R0006,15/03/2026,Peshawar,18-24,,Maybe,Too slow
+R0007,15/03/2026,Karachi,25-34,Dissatisfied,Yes,Good service
+R0008,01/03/2026,Islamabad,18-24,Dissatisfied,No,Good service
+R0009,09/04/2026,Islamabad,25-34,Satisfied,No,
+R0010,15/03/2026,Karachi,35-44,,Yes,Too slow
+R0011,20/03/2026,Karachi,25-34,Dissatisfied,No,"=1+1 not a formula, just text"
+R0012,07/03/2026,Quetta,45-54,Very satisfied,No,
+R0013,14/04/2026,Multan,35-44,Neutral,No,Good service
+R0014,06/03/2026,Karachi,55+,Dissatisfied,No,Too slow
+R0015,05/03/2026,Peshawar,45-54,Neutral,Maybe,Good service
+R0016,18/03/2026,Lahore,25-34,Dissatisfied,Maybe,Too slow
+R0017,07/04/2026,Peshawar,25-34,Neutral,Yes,
+R0018,23/03/2026,Multan,45-54,Neutral,Maybe,Good service
+R0019,10/04/2026,Quetta,18-24,Very satisfied,No,
+R0020,21/03/2026,Peshawar,45-54,,No,"=1+1 not a formula, just text"
+R0021,18/03/2026,Peshawar,45-54,Satisfied,Maybe,
+R0022,04/04/2026,Karachi,25-34,Neutral,No,"=1+1 not a formula, just text"
+R0023,01/04/2026,Multan,18-24,Very satisfied,Maybe,
+R0024,02/04/2026,Quetta,35-44,Satisfied,No,
+R0025,12/04/2026,Multan,45-54,Very satisfied,No,
+R0026,14/03/2026,Islamabad,55+,Very satisfied,Maybe,
+R0027,06/04/2026,Peshawar,45-54,,Yes,Too slow
+R0028,24/03/2026,Lahore,45-54,Neutral,Yes,Too slow
+R0029,28/03/2026,Islamabad,55+,Dissatisfied,No,
+R0030,09/03/2026,Lahore,45-54,Satisfied,Yes,
+R0031,04/03/2026,Quetta,35-44,Neutral,Yes,"=1+1 not a formula, just text"
+R0032,27/03/2026,Lahore,55+,Satisfied,Maybe,
+R0033,29/03/2026,Quetta,18-24,Very satisfied,No,Too slow
+R0034,01/03/2026,Multan,45-54,,Maybe,
+R0035,10/03/2026,Islamabad,25-34,,Maybe,Good service
+R0036,03/04/2026,Quetta,55+,Neutral,Maybe,
+R0037,31/03/2026,Peshawar,55+,Very satisfied,No,
+R0038,08/04/2026,Quetta  ,18-24,,Yes,Good service
+R0039,15/03/2026,Lahore,25-34,Very satisfied,No,Too slow
+R0040,02/03/2026,Islamabad,18-24,Dissatisfied,Yes,"=1+1 not a formula, just text"
+R0041,01/04/2026,Karachi,45-54,Very satisfied,No,Too slow
+R0042,08/03/2026,Multan,18-24,Very satisfied,Yes,"=1+1 not a formula, just text"
+R0043,07/04/2026,Quetta,55+,Very satisfied,No,Good service
+R0044,19/03/2026,Multan,25-34,,No,
+R0045,10/03/2026,Karachi,35-44,Dissatisfied,Maybe,Good service
+R0046,02/03/2026,Peshawar,25-34,Neutral,Maybe,Too slow
+R0047,03/04/2026,Quetta,35-44,Very satisfied,Maybe,
+R0048,09/04/2026,Quetta,35-44,Dissatisfied,No,Good service
+R0049,17/03/2026,Quetta,45-54,Very satisfied,Maybe,Good service
+R0050,08/03/2026,Karachi,55+,Very satisfied,Yes,Good service
+R0051,29/03/2026,Lahore,45-54,,Maybe,
+R0052,27/03/2026,Multan,18-24,Neutral,Yes,"=1+1 not a formula, just text"
+R0053,12/04/2026,Karachi,18-24,Very satisfied,Maybe,Good service
+R0054,27/03/2026,Lahore,55+,Dissatisfied,Yes,Good service
+R0055,16/03/2026,Karachi,25-34,,Yes,Good service
+R0056,05/04/2026,Peshawar,55+,Neutral,Maybe,
+R0057,02/03/2026,Quetta,35-44,Dissatisfied,Maybe,"=1+1 not a formula, just text"
+R0058,01/03/2026,Karachi,35-44,Neutral,No,
+R0059,18/03/2026,Peshawar,18-24,,Maybe,"=1+1 not a formula, just text"
+R0060,10/04/2026,Multan,25-34,Neutral,No,Good service
+R0061,10/03/2026,Islamabad,18-24,Neutral,Yes,
+R0062,03/04/2026,Peshawar,25-34,Dissatisfied,No,
+R0063,29/03/2026,Islamabad,35-44,Satisfied,No,Too slow
+R0064,17/03/2026,Quetta,35-44,Dissatisfied,Maybe,Too slow
+R0065,17/03/2026,Lahore,45-54,Very satisfied,Maybe,Good service
+R0066,07/03/2026,Islamabad,55+,Neutral,Maybe,
+R0067,23/03/2026,Multan,25-34,Neutral,No,Good service
+R0068,13/03/2026,Karachi,35-44,Neutral,Maybe,
+R0069,05/03/2026,Quetta,25-34,Dissatisfied,Yes,Good service
+R0070,07/04/2026,Peshawar,35-44,Neutral,Maybe,Too slow
+R0071,23/03/2026,Peshawar,45-54,Dissatisfied,Maybe,Good service
+R0072,08/04/2026,Peshawar,35-44,Very satisfied,Maybe,"=1+1 not a formula, just text"
+R0073,27/03/2026,Karachi,45-54,Very satisfied,No,Good service
+R0074,12/04/2026,Peshawar,45-54,,Maybe,
+R0075,15/03/2026,Quetta  ,18-24,Neutral,Yes,
+R0076,10/04/2026,Quetta,18-24,Satisfied,No,
+R0077,22/03/2026,Multan,55+,,Yes,"=1+1 not a formula, just text"
+R0078,03/04/2026,Quetta,35-44,Satisfied,No,Good service
+R0079,07/03/2026,Islamabad,35-44,,Yes,
+R0080,21/03/2026,Islamabad,55+,Neutral,Yes,"=1+1 not a formula, just text"
+R0081,11/03/2026,Islamabad,25-34,Dissatisfied,Maybe,
+R0082,10/04/2026,Karachi,35-44,Satisfied,Maybe,Too slow
+R0083,25/03/2026,Islamabad,35-44,Neutral,Yes,Too slow
+R0084,11/03/2026,,55+,Very satisfied,No,Good service
+R0085,23/03/2026,Quetta,45-54,Very satisfied,Yes,Good service
+R0086,04/04/2026,Peshawar,45-54,,Yes,
+R0087,25/03/2026,Quetta,25-34,Neutral,Maybe,Good service
+R0088,17/03/2026,Karachi,18-24,Satisfied,Maybe,"=1+1 not a formula, just text"
+R0089,10/03/2026,Karachi,25-34,Neutral,Maybe,
+R0090,26/03/2026,Lahore,55+,Satisfied,Yes,
+R0091,08/04/2026,Peshawar,25-34,,Maybe,
+R0092,18/03/2026,Karachi,25-34,,Maybe,Good service
+R0093,30/03/2026,Peshawar,18-24,Dissatisfied,Yes,
+R0094,29/03/2026,Karachi,18-24,Very satisfied,No,Good service
+R0095,16/03/2026,Karachi,18-24,Satisfied,Yes,
+R0096,07/04/2026,Multan,18-24,,No,
+R0097,13/03/2026,Multan,18-24,Neutral,Yes,"=1+1 not a formula, just text"
+R0098,08/04/2026,Quetta,25-34,Neutral,No,Good service
+R0099,01/03/2026,Multan,45-54,Satisfied,No,Too slow
+R0100,31/03/2026,Karachi,25-34,Dissatisfied,Yes,Too slow
+R0101,06/03/2026,Multan,18-24,,Maybe,Good service
+R0102,04/04/2026,Karachi,45-54,Satisfied,Yes,Good service
+R0103,07/03/2026,Peshawar,45-54,Neutral,Maybe,
+R0104,01/04/2026,Lahore,18-24,Dissatisfied,No,Good service
+R0105,15/03/2026,Lahore,45-54,Very satisfied,Maybe,Too slow
+R0106,19/03/2026,Multan,18-24,Dissatisfied,Yes,Too slow
+R0107,17/03/2026,Karachi,35-44,,Maybe,
+R0108,21/03/2026,Multan,25-34,Satisfied,No,Good service
+R0109,21/03/2026,Islamabad,18-24,,Yes,"=1+1 not a formula, just text"
+R0110,04/03/2026,Karachi,18-24,Dissatisfied,No,
+R0111,11/03/2026,Quetta,35-44,Dissatisfied,Yes,Good service
+R0112,05/04/2026,Quetta  ,35-44,Satisfied,Yes,Good service
+R0113,24/03/2026,Lahore,55+,Very satisfied,No,
+R0114,05/04/2026,Peshawar,35-44,Satisfied,No,
+R0115,04/04/2026,Multan,45-54,Very satisfied,Maybe,
+R0116,22/03/2026,Karachi,18-24,Dissatisfied,Maybe,
+R0117,22/03/2026,Quetta,55+,Dissatisfied,Maybe,"=1+1 not a formula, just text"
+R0118,07/03/2026,Quetta,35-44,Neutral,No,
+R0119,06/04/2026,Quetta,55+,Very satisfied,Maybe,
+R0120,11/04/2026,Karachi,35-44,Satisfied,No,Too slow
+R0121,27/03/2026,Multan,35-44,Satisfied,Maybe,"=1+1 not a formula, just text"
+R0122,18/03/2026,Peshawar,55+,,Yes,
+R0123,11/04/2026,Islamabad,35-44,,Maybe,
+R0124,17/03/2026,Multan,45-54,Very satisfied,No,"=1+1 not a formula, just text"
+R0125,14/04/2026,Karachi,25-34,Satisfied,Maybe,Too slow
+R0126,07/03/2026,Islamabad,18-24,,Yes,Good service
+R0127,05/04/2026,Karachi,25-34,Dissatisfied,Yes,
+R0128,23/03/2026,Lahore,25-34,Satisfied,Maybe,Good service
+R0129,05/03/2026,Karachi,35-44,Dissatisfied,Yes,"=1+1 not a formula, just text"
+R0130,26/03/2026,Lahore,18-24,Satisfied,Maybe,Good service
+R0131,02/04/2026,Karachi,35-44,,No,"=1+1 not a formula, just text"
+R0132,15/03/2026,Quetta,55+,,Maybe,
+R0133,17/03/2026,Karachi,55+,Dissatisfied,Yes,"=1+1 not a formula, just text"
+R0134,17/03/2026,Islamabad,45-54,Very satisfied,Yes,"=1+1 not a formula, just text"
+R0135,06/04/2026,Quetta,45-54,,Yes,
+R0136,22/03/2026,Lahore,35-44,Neutral,No,"=1+1 not a formula, just text"
+R0137,06/03/2026,Quetta,45-54,Satisfied,No,
+R0138,27/03/2026,Multan,18-24,Satisfied,Maybe,
+R0139,12/03/2026,Karachi,25-34,Dissatisfied,No,
+R0140,27/03/2026,Islamabad,18-24,Very satisfied,No,Good service
+R0141,14/04/2026,Karachi,55+,Satisfied,Yes,Too slow
+R0142,15/03/2026,Quetta,35-44,Dissatisfied,Yes,"=1+1 not a formula, just text"
+R0143,06/04/2026,Islamabad,55+,Very satisfied,Yes,"=1+1 not a formula, just text"
+R0144,28/03/2026,Peshawar,25-34,,Maybe,Too slow
+R0145,10/04/2026,Karachi,35-44,Dissatisfied,Yes,"=1+1 not a formula, just text"
+R0146,08/03/2026,Karachi,25-34,Dissatisfied,Maybe,Too slow
+R0147,08/03/2026,Peshawar,35-44,Satisfied,Maybe,Too slow
+R0148,15/03/2026,Quetta,45-54,Dissatisfied,Yes,
+R0149,08/04/2026,Islamabad  ,25-34,Very satisfied,Yes,Too slow
+R0150,28/03/2026,Karachi,55+,Very satisfied,No,
+R0151,08/03/2026,Multan,25-34,Dissatisfied,Yes,"=1+1 not a formula, just text"
+R0152,31/03/2026,Karachi,35-44,Dissatisfied,Yes,
+R0153,15/03/2026,Karachi,55+,Dissatisfied,Maybe,Too slow
+R0154,02/04/2026,Islamabad,55+,Neutral,Maybe,
+R0155,09/04/2026,Quetta,55+,Neutral,Yes,Too slow
+R0156,11/04/2026,Lahore,45-54,,No,Good service
+R0157,10/03/2026,Multan,18-24,,Yes,Good service
+R0158,31/03/2026,Quetta,55+,Neutral,Yes,"=1+1 not a formula, just text"
+R0159,20/03/2026,Karachi,18-24,Dissatisfied,Yes,Good service
+R0160,07/03/2026,Quetta,45-54,Satisfied,Yes,
+R0161,03/03/2026,Peshawar,25-34,Satisfied,Maybe,Too slow
+R0162,04/04/2026,Peshawar,18-24,Very satisfied,No,Good service
+R0163,30/03/2026,Peshawar,25-34,,Maybe,
+R0164,12/04/2026,Islamabad,55+,,Yes,
+R0165,08/03/2026,Islamabad,45-54,Very satisfied,No,
+R0166,07/03/2026,Peshawar,25-34,Very satisfied,Yes,
+R0167,27/03/2026,,25-34,Neutral,Yes,"=1+1 not a formula, just text"
+R0168,29/03/2026,Multan,18-24,Satisfied,No,Too slow
+R0169,29/03/2026,Quetta,55+,Dissatisfied,Yes,Good service
+R0170,14/03/2026,Multan,35-44,Neutral,Maybe,
+R0171,23/03/2026,Multan,25-34,Neutral,No,Good service
+R0172,02/04/2026,Lahore,45-54,Neutral,Yes,"=1+1 not a formula, just text"
+R0173,19/03/2026,Karachi,45-54,Very satisfied,No,Too slow
+R0174,07/03/2026,Quetta,25-34,Very satisfied,Yes,
+R0175,23/03/2026,Lahore,25-34,Very satisfied,No,
+R0176,13/04/2026,Quetta,45-54,Very satisfied,No,"=1+1 not a formula, just text"
+R0177,04/03/2026,Quetta,55+,Neutral,No,"=1+1 not a formula, just text"
+R0178,03/03/2026,Lahore,18-24,,Yes,Too slow
+R0179,14/03/2026,Karachi,45-54,Satisfied,Maybe,
+R0180,08/03/2026,Multan,35-44,Satisfied,No,Good service
+R0181,19/03/2026,Multan,25-34,Dissatisfied,Maybe,"=1+1 not a formula, just text"
+R0182,31/03/2026,Peshawar,45-54,Neutral,Maybe,Good service
+R0183,31/03/2026,Karachi,45-54,Very satisfied,No,Too slow
+R0184,13/03/2026,Lahore,45-54,Satisfied,Maybe,"=1+1 not a formula, just text"
+R0185,06/04/2026,Multan,55+,Very satisfied,Maybe,Good service
+R0186,31/03/2026,Lahore  ,35-44,Neutral,No,Too slow
+R0187,11/04/2026,Quetta,45-54,Very satisfied,Yes,
+R0188,14/03/2026,Lahore,45-54,Neutral,No,
+R0189,26/03/2026,Multan,18-24,Neutral,Maybe,
+R0190,09/03/2026,Karachi,25-34,Satisfied,No,
+R0191,09/04/2026,Islamabad,25-34,Neutral,Maybe,"=1+1 not a formula, just text"
+R0192,01/03/2026,Lahore,45-54,Satisfied,No,"=1+1 not a formula, just text"
+R0193,01/04/2026,Peshawar,18-24,Dissatisfied,Maybe,Too slow
+R0194,01/04/2026,Multan,25-34,Satisfied,Yes,"=1+1 not a formula, just text"
+R0195,05/03/2026,Peshawar,25-34,,Maybe,Too slow
+R0196,18/03/2026,Karachi,45-54,Dissatisfied,Maybe,Too slow
+R0197,09/04/2026,Quetta,45-54,Satisfied,No,"=1+1 not a formula, just text"
+R0198,07/04/2026,Quetta,25-34,Very satisfied,Yes,
+R0199,17/03/2026,Peshawar,35-44,Dissatisfied,No,Good service
+R0200,01/03/2026,Islamabad,25-34,Neutral,Maybe,Good service
+R0201,08/03/2026,Islamabad,55+,,Yes,Too slow
+R0202,15/03/2026,Islamabad,18-24,Neutral,No,Too slow
+R0203,31/03/2026,Lahore,35-44,Very satisfied,Maybe,Good service
+R0204,19/03/2026,Lahore,25-34,Satisfied,No,Good service
+R0205,23/03/2026,Quetta,45-54,,No,
+R0206,04/04/2026,Karachi,35-44,Satisfied,No,Good service
+R0207,26/03/2026,Islamabad,25-34,Neutral,Maybe,
+R0208,25/03/2026,Islamabad,35-44,Very satisfied,Yes,"=1+1 not a formula, just text"
+R0209,05/03/2026,Lahore,45-54,Satisfied,Maybe,"=1+1 not a formula, just text"
+R0210,27/03/2026,Quetta,25-34,Neutral,Maybe,"=1+1 not a formula, just text"
+R0211,29/03/2026,Quetta,45-54,Dissatisfied,Maybe,
+R0212,07/03/2026,Karachi,55+,Satisfied,Yes,"=1+1 not a formula, just text"
+R0213,12/03/2026,Islamabad,35-44,Satisfied,Yes,Good service
+R0214,26/03/2026,Lahore,18-24,Neutral,Maybe,"=1+1 not a formula, just text"
+R0215,26/03/2026,Quetta,35-44,Very satisfied,Maybe,
+R0216,06/03/2026,Lahore,45-54,Satisfied,Yes,
+R0217,11/03/2026,Lahore,25-34,,Maybe,Good service
+R0218,23/03/2026,Multan,25-34,Neutral,No,
+R0219,17/03/2026,Quetta,25-34,Satisfied,Yes,"=1+1 not a formula, just text"
+R0220,06/03/2026,Multan,35-44,,No,
+R0221,30/03/2026,Islamabad,45-54,Neutral,Maybe,Too slow
+R0222,13/04/2026,Lahore,25-34,Neutral,Yes,Too slow
+R0223,07/04/2026,Karachi  ,35-44,Neutral,Yes,
+R0224,14/03/2026,Quetta,35-44,,Maybe,"=1+1 not a formula, just text"
+R0225,03/04/2026,Quetta,35-44,,Maybe,Good service
+R0226,10/03/2026,Multan,35-44,Neutral,No,Good service
+R0227,02/04/2026,Karachi,35-44,Neutral,Maybe,
+R0228,24/03/2026,Multan,55+,Satisfied,Maybe,Too slow
+R0229,12/03/2026,Multan,55+,Dissatisfied,No,
+R0230,04/04/2026,Quetta,55+,Dissatisfied,Maybe,
+R0231,10/03/2026,Multan,18-24,Satisfied,Maybe,
+R0232,24/03/2026,Lahore,25-34,Neutral,Yes,"=1+1 not a formula, just text"
+R0233,03/04/2026,Islamabad,18-24,Neutral,Yes,Good service
+R0234,09/03/2026,Quetta,55+,Neutral,Maybe,Too slow
+R0235,24/03/2026,Islamabad,35-44,Satisfied,Maybe,
+R0236,04/03/2026,Peshawar,55+,Very satisfied,Yes,Too slow
+R0237,07/04/2026,Peshawar,25-34,Dissatisfied,Maybe,Too slow
+R0238,28/03/2026,Islamabad,45-54,,No,
+R0239,02/04/2026,Lahore,55+,Neutral,No,
+R0240,11/03/2026,Karachi,18-24,Satisfied,No,Too slow
+R0241,08/04/2026,Multan,18-24,Neutral,Yes,Good service
+R0242,09/04/2026,Multan,18-24,Satisfied,Yes,
+R0243,09/03/2026,Islamabad,18-24,Satisfied,Maybe,
+R0244,07/03/2026,Islamabad,35-44,,Yes,
+R0245,11/04/2026,Peshawar,25-34,Satisfied,No,Good service
+R0246,13/03/2026,Multan,45-54,Dissatisfied,Yes,
+R0247,08/04/2026,Islamabad,25-34,Neutral,No,
+R0248,06/03/2026,Karachi,35-44,Neutral,Yes,"=1+1 not a formula, just text"
+R0249,13/03/2026,Quetta,35-44,Dissatisfied,Maybe,"=1+1 not a formula, just text"
+R0250,07/03/2026,,25-34,Very satisfied,Maybe,Too slow
+R0251,08/04/2026,Islamabad,25-34,,Yes,Too slow
+R0252,05/04/2026,Islamabad,35-44,Neutral,Maybe,
+R0253,26/03/2026,Peshawar,25-34,Very satisfied,Maybe,Too slow
+R0254,22/03/2026,Lahore,18-24,Very satisfied,Yes,"=1+1 not a formula, just text"
+R0255,03/04/2026,Quetta,18-24,Dissatisfied,No,"=1+1 not a formula, just text"
+R0256,15/03/2026,Karachi,25-34,Neutral,No,"=1+1 not a formula, just text"
+R0257,30/03/2026,Lahore,45-54,Neutral,Yes,Too slow
+R0258,11/04/2026,Multan,55+,,Yes,Too slow
+R0259,24/03/2026,Quetta,18-24,Dissatisfied,Maybe,"=1+1 not a formula, just text"
+R0260,16/03/2026,Peshawar  ,55+,Dissatisfied,No,"=1+1 not a formula, just text"
+R0261,29/03/2026,Lahore,45-54,Neutral,No,Good service
+R0262,22/03/2026,Karachi,45-54,Neutral,Yes,"=1+1 not a formula, just text"
+R0263,02/04/2026,Multan,18-24,,No,
+R0264,03/03/2026,Quetta,45-54,,No,"=1+1 not a formula, just text"
+R0265,03/04/2026,Karachi,18-24,,Maybe,Good service
+R0266,04/03/2026,Lahore,55+,Very satisfied,Maybe,"=1+1 not a formula, just text"
+R0267,27/03/2026,Multan,45-54,,No,Good service
+R0268,16/03/2026,Quetta,35-44,Dissatisfied,Maybe,Too slow
+R0269,29/03/2026,Karachi,25-34,,No,"=1+1 not a formula, just text"
+R0270,10/03/2026,Islamabad,45-54,Neutral,Yes,"=1+1 not a formula, just text"
+R0271,10/03/2026,Quetta,35-44,,Maybe,"=1+1 not a formula, just text"
+R0272,16/03/2026,Karachi,35-44,Neutral,No,
+R0273,14/03/2026,Peshawar,45-54,Satisfied,Maybe,Too slow
+R0274,06/04/2026,Quetta,55+,Very satisfied,Maybe,
+R0275,07/04/2026,Peshawar,25-34,Satisfied,Maybe,"=1+1 not a formula, just text"
+R0276,09/03/2026,Lahore,45-54,Very satisfied,No,Too slow
+R0277,01/04/2026,Quetta,18-24,Neutral,Maybe,Too slow
+R0278,30/03/2026,Islamabad,25-34,Dissatisfied,No,"=1+1 not a formula, just text"
+R0279,17/03/2026,Multan,45-54,Very satisfied,Maybe,
+R0280,12/03/2026,Lahore,18-24,Very satisfied,Maybe,"=1+1 not a formula, just text"
+R0281,14/04/2026,Karachi,18-24,,Maybe,"=1+1 not a formula, just text"
+R0282,14/03/2026,Quetta,18-24,,Maybe,"=1+1 not a formula, just text"
+R0283,09/03/2026,Karachi,25-34,Dissatisfied,Yes,Too slow
+R0284,24/03/2026,Multan,35-44,,Yes,
+R0285,01/04/2026,Lahore,55+,Neutral,No,"=1+1 not a formula, just text"
+R0286,28/03/2026,Quetta,45-54,Neutral,No,"=1+1 not a formula, just text"
+R0287,12/03/2026,Islamabad,55+,Dissatisfied,No,
+R0288,05/04/2026,Lahore,18-24,Dissatisfied,Maybe,Too slow
+R0289,07/04/2026,Multan,25-34,Neutral,Maybe,Too slow
+R0290,19/03/2026,Multan,45-54,,Yes,
+R0291,30/03/2026,Quetta,45-54,Neutral,Maybe,
+R0292,05/04/2026,Multan,35-44,Neutral,No,
+R0293,09/04/2026,Peshawar,35-44,Dissatisfied,Maybe,
+R0294,04/04/2026,Karachi,35-44,Dissatisfied,Yes,Too slow
+R0295,12/03/2026,Multan,45-54,Very satisfied,Yes,
+R0296,31/03/2026,Islamabad,25-34,Very satisfied,Yes,Too slow
+R0297,13/04/2026,Quetta  ,55+,,Yes,Too slow
+R0298,04/04/2026,Quetta,35-44,Satisfied,Yes,Too slow
+R0299,28/03/2026,Multan,18-24,Very satisfied,No,Too slow
+R0300,08/04/2026,Peshawar,55+,Neutral,No,
+R0301,28/03/2026,Lahore,25-34,,Maybe,"=1+1 not a formula, just text"
+R0302,04/03/2026,Multan,18-24,,No,
+R0303,27/03/2026,Islamabad,18-24,Neutral,Maybe,Too slow
+R0304,04/03/2026,Multan,55+,Satisfied,Maybe,
+R0305,19/03/2026,Multan,45-54,Neutral,Yes,"=1+1 not a formula, just text"
+R0306,27/03/2026,Peshawar,45-54,Satisfied,No,
+R0307,15/03/2026,Karachi,25-34,Satisfied,Yes,
+R0308,06/04/2026,Multan,18-24,,Yes,"=1+1 not a formula, just text"
+R0309,19/03/2026,Karachi,35-44,Dissatisfied,No,"=1+1 not a formula, just text"
+R0310,27/03/2026,Karachi,45-54,Neutral,No,
+R0311,12/04/2026,Karachi,18-24,Very satisfied,Maybe,Too slow
+R0312,01/03/2026,Karachi,18-24,Satisfied,Yes,Good service
+R0313,14/03/2026,Islamabad,45-54,,No,
+R0314,05/04/2026,Multan,45-54,Very satisfied,No,Good service
+R0315,06/03/2026,Quetta,55+,Neutral,Yes,Too slow
+R0316,13/04/2026,Quetta,35-44,Dissatisfied,Yes,Too slow
+R0317,01/04/2026,Lahore,25-34,Very satisfied,No,"=1+1 not a formula, just text"
+R0318,08/03/2026,Multan,45-54,Dissatisfied,No,Too slow
+R0319,07/03/2026,Karachi,55+,Dissatisfied,Yes,"=1+1 not a formula, just text"
+R0320,05/03/2026,Multan,25-34,Satisfied,Yes,"=1+1 not a formula, just text"
+R0321,18/03/2026,Karachi,35-44,Very satisfied,Yes,Too slow
+R0322,13/04/2026,Peshawar,35-44,Dissatisfied,Maybe,
+R0323,01/04/2026,Karachi,25-34,Neutral,No,
+R0324,20/03/2026,Islamabad,25-34,Dissatisfied,Maybe,Too slow
+R0325,26/03/2026,Peshawar,55+,Satisfied,Yes,Too slow
+R0326,11/04/2026,Peshawar,45-54,Very satisfied,Yes,"=1+1 not a formula, just text"
+R0327,04/04/2026,Lahore,55+,,Maybe,Good service
+R0328,16/03/2026,Islamabad,55+,Satisfied,Maybe,Too slow
+R0329,17/03/2026,Islamabad,45-54,Very satisfied,No,
+R0330,12/03/2026,Lahore,55+,Satisfied,Maybe,Good service
+R0331,26/03/2026,Multan,35-44,Dissatisfied,No,"=1+1 not a formula, just text"
+R0332,12/04/2026,Peshawar,18-24,Dissatisfied,Maybe,"=1+1 not a formula, just text"
+R0333,02/04/2026,,35-44,Satisfied,Yes,
+R0334,07/04/2026,Islamabad  ,35-44,Satisfied,Maybe,
+R0335,29/03/2026,Quetta,25-34,Very satisfied,Yes,Too slow
+R0336,08/03/2026,Quetta,45-54,,No,"=1+1 not a formula, just text"
+R0337,20/03/2026,Multan,45-54,Very satisfied,Maybe,Too slow
+R0338,13/04/2026,Karachi,35-44,Very satisfied,Yes,"=1+1 not a formula, just text"
+R0339,16/03/2026,Karachi,55+,Dissatisfied,Maybe,
+R0340,06/03/2026,Islamabad,55+,Neutral,Maybe,"=1+1 not a formula, just text"
+R0341,08/04/2026,Quetta,18-24,Dissatisfied,No,Good service
+R0342,31/03/2026,Peshawar,18-24,Very satisfied,Maybe,
+R0343,23/03/2026,Multan,35-44,Satisfied,Yes,Too slow
+R0344,09/04/2026,Multan,45-54,Very satisfied,Maybe,"=1+1 not a formula, just text"
+R0345,25/03/2026,Quetta,18-24,Neutral,Maybe,"=1+1 not a formula, just text"
+R0346,27/03/2026,Peshawar,25-34,,Maybe,
+R0347,02/03/2026,Multan,25-34,Satisfied,Yes,
+R0348,13/04/2026,Lahore,35-44,Very satisfied,Maybe,Good service
+R0349,09/03/2026,Karachi,45-54,Dissatisfied,Yes,
+R0350,12/03/2026,Karachi,55+,Neutral,No,
+R0351,24/03/2026,Islamabad,25-34,Neutral,No,
+R0352,13/04/2026,Multan,45-54,,No,Good service
+R0353,04/03/2026,Multan,18-24,Very satisfied,No,Good service
+R0354,03/03/2026,Peshawar,55+,Neutral,No,Good service
+R0355,01/04/2026,Peshawar,35-44,Neutral,No,Good service
+R0356,13/03/2026,Peshawar,25-34,Very satisfied,Maybe,Too slow
+R0357,12/04/2026,Lahore,35-44,Very satisfied,Maybe,
+R0358,10/03/2026,Islamabad,25-34,Neutral,No,
+R0359,24/03/2026,Peshawar,18-24,,Maybe,Good service
+R0360,02/04/2026,Islamabad,18-24,Neutral,Yes,
+R0361,12/03/2026,Quetta,45-54,,Yes,"=1+1 not a formula, just text"
+R0362,03/04/2026,Islamabad,45-54,Satisfied,No,
+R0363,17/03/2026,Peshawar,35-44,,Yes,
+R0364,07/03/2026,Quetta,25-34,Satisfied,Yes,"=1+1 not a formula, just text"
+R0365,09/04/2026,Peshawar,45-54,,Maybe,Too slow
+R0366,27/03/2026,Peshawar,35-44,Very satisfied,Yes,"=1+1 not a formula, just text"
+R0367,12/04/2026,Karachi,45-54,Satisfied,Yes,"=1+1 not a formula, just text"
+R0368,02/04/2026,Karachi,25-34,Dissatisfied,Maybe,"=1+1 not a formula, just text"
+R0369,11/04/2026,Multan,55+,Very satisfied,No,
+R0370,16/03/2026,Islamabad,18-24,,No,Too slow
+R0371,22/03/2026,Quetta  ,25-34,Neutral,Maybe,"=1+1 not a formula, just text"
+R0372,11/03/2026,Multan,55+,Dissatisfied,Yes,
+R0373,08/04/2026,Quetta,25-34,Satisfied,Maybe,
+R0374,15/03/2026,Peshawar,55+,Neutral,No,"=1+1 not a formula, just text"
+R0375,13/03/2026,Islamabad,45-54,Neutral,Maybe,"=1+1 not a formula, just text"
+R0376,18/03/2026,Peshawar,45-54,Satisfied,Yes,Good service
+R0377,02/03/2026,Karachi,55+,Dissatisfied,Yes,Too slow
+R0378,09/04/2026,Lahore,25-34,,Maybe,
+R0379,24/03/2026,Lahore,25-34,Dissatisfied,Yes,
+R0380,16/03/2026,Islamabad,25-34,Very satisfied,No,Too slow
+R0381,23/03/2026,Lahore,18-24,,Maybe,
+R0382,08/03/2026,Islamabad,25-34,Neutral,Yes,Good service
+R0383,17/03/2026,Peshawar,35-44,,Maybe,Good service
+R0384,31/03/2026,Karachi,55+,Very satisfied,No,"=1+1 not a formula, just text"
+R0385,07/04/2026,Lahore,18-24,Satisfied,No,Good service
+R0386,08/03/2026,Karachi,55+,,Maybe,
+R0387,13/04/2026,Lahore,55+,Dissatisfied,No,Good service
+R0388,14/03/2026,Peshawar,35-44,Satisfied,Maybe,"=1+1 not a formula, just text"
+R0389,09/03/2026,Multan,35-44,Very satisfied,Yes,
+R0390,04/03/2026,Karachi,35-44,,No,
+R0391,22/03/2026,Multan,18-24,Dissatisfied,No,
+R0392,03/04/2026,Quetta,18-24,,No,
+R0393,06/04/2026,Karachi,18-24,,Maybe,"=1+1 not a formula, just text"
+R0394,23/03/2026,Quetta,18-24,Satisfied,Yes,Too slow
+R0395,30/03/2026,Multan,45-54,Very satisfied,Yes,Too slow
+R0396,14/03/2026,Islamabad,45-54,,No,
+R0397,06/04/2026,Karachi,25-34,Dissatisfied,Maybe,Too slow
+R0398,02/04/2026,Karachi,55+,Very satisfied,No,Good service
+R0399,06/04/2026,Multan,18-24,,Yes,Good service
+R0400,07/03/2026,Multan,18-24,Very satisfied,No,"=1+1 not a formula, just text"
+R0401,05/04/2026,Quetta,25-34,,No,
+R0402,27/03/2026,Karachi,35-44,Satisfied,No,Good service
+R0403,26/03/2026,Peshawar,18-24,Very satisfied,No,Too slow
+R0404,22/03/2026,Lahore,55+,Satisfied,Maybe,
+R0405,10/04/2026,Islamabad,55+,Dissatisfied,Yes,"=1+1 not a formula, just text"
+R0406,03/03/2026,Multan,45-54,Dissatisfied,No,Good service
+R0407,05/03/2026,Karachi,18-24,Very satisfied,Yes,
+R0408,16/03/2026,Lahore  ,18-24,Satisfied,No,
+R0409,24/03/2026,Quetta,45-54,Neutral,Maybe,
+R0410,02/04/2026,Multan,18-24,Satisfied,No,
+R0411,16/03/2026,Islamabad,35-44,Dissatisfied,Maybe,Good service
+R0412,01/03/2026,Peshawar,25-34,,Maybe,Too slow
+R0413,08/03/2026,Peshawar,55+,Dissatisfied,Maybe,Good service
+R0414,22/03/2026,Quetta,55+,Neutral,No,Too slow
+R0415,01/04/2026,Quetta,35-44,Dissatisfied,Maybe,"=1+1 not a formula, just text"
+R0416,04/04/2026,,18-24,Satisfied,Maybe,Good service
+R0417,06/04/2026,Karachi,45-54,Very satisfied,No,
+R0418,03/03/2026,Multan,55+,,Maybe,
+R0419,03/03/2026,Islamabad,18-24,Dissatisfied,Maybe,
+R0420,05/04/2026,Peshawar,35-44,Dissatisfied,Maybe,Good service
+R0421,30/03/2026,Islamabad,45-54,,Maybe,"=1+1 not a formula, just text"
+R0422,03/03/2026,Lahore,45-54,Dissatisfied,No,
+R0423,14/04/2026,Quetta,35-44,Dissatisfied,No,
+R0424,14/04/2026,Multan,25-34,Neutral,No,
+R0425,08/04/2026,Multan,25-34,Neutral,No,Too slow
+R0426,03/03/2026,Lahore,18-24,Neutral,Yes,"=1+1 not a formula, just text"
+R0427,22/03/2026,Karachi,18-24,Dissatisfied,Yes,
+R0428,13/04/2026,Islamabad,35-44,Very satisfied,Maybe,
+R0429,15/03/2026,Quetta,25-34,Very satisfied,Maybe,"=1+1 not a formula, just text"
+R0430,24/03/2026,Peshawar,55+,Dissatisfied,Maybe,
+R0431,14/04/2026,Multan,45-54,Satisfied,Yes,Good service
+R0432,12/04/2026,Karachi,25-34,Dissatisfied,Maybe,Too slow
+R0433,14/04/2026,Karachi,45-54,,Maybe,Good service
+R0434,15/03/2026,Quetta,55+,,Maybe,
+R0435,03/03/2026,Islamabad,45-54,Dissatisfied,Yes,
+R0436,31/03/2026,Lahore,45-54,Satisfied,Yes,
+R0437,05/04/2026,Karachi,18-24,Very satisfied,No,Too slow
+R0438,03/04/2026,Quetta,25-34,Satisfied,Yes,Too slow
+R0439,02/04/2026,Karachi,55+,Neutral,No,
+R0440,15/03/2026,Multan,25-34,Very satisfied,Yes,
+R0441,07/04/2026,Quetta,45-54,Dissatisfied,No,Good service
+R0442,07/04/2026,Peshawar,35-44,Neutral,No,
+R0443,08/03/2026,Islamabad,35-44,Dissatisfied,No,Too slow
+R0444,05/04/2026,Islamabad,55+,Neutral,No,Too slow
+R0445,23/03/2026,Karachi  ,18-24,Dissatisfied,Maybe,"=1+1 not a formula, just text"
+R0446,09/03/2026,Quetta,25-34,Satisfied,Maybe,Good service
+R0447,20/03/2026,Multan,25-34,Very satisfied,Maybe,
+R0448,09/04/2026,Multan,55+,Satisfied,Yes,"=1+1 not a formula, just text"
+R0449,18/03/2026,Quetta,45-54,Satisfied,No,
+R0450,22/03/2026,Peshawar,25-34,Satisfied,Yes,Too slow
+R0451,01/04/2026,Peshawar,55+,Neutral,Maybe,Good service
+R0452,14/03/2026,Islamabad,55+,,No,Too slow
+R0453,09/03/2026,Karachi,45-54,Satisfied,Yes,
+R0454,25/03/2026,Islamabad,55+,Neutral,Yes,Good service
+R0455,07/04/2026,Karachi,45-54,Very satisfied,No,Too slow
+R0456,26/03/2026,Quetta,55+,Satisfied,Maybe,"=1+1 not a formula, just text"
+R0457,25/03/2026,Lahore,25-34,Satisfied,No,
+R0458,28/03/2026,Karachi,25-34,Very satisfied,No,
+R0459,20/03/2026,Quetta,18-24,Very satisfied,Maybe,"=1+1 not a formula, just text"
+R0460,09/03/2026,Lahore,55+,Satisfied,Maybe,"=1+1 not a formula, just text"
+R0461,31/03/2026,Quetta,35-44,Very satisfied,Yes,Too slow
+R0462,02/04/2026,Quetta,55+,Dissatisfied,No,Good service
+R0463,02/03/2026,Quetta,18-24,Very satisfied,Maybe,
+R0464,16/03/2026,Karachi,55+,,Yes,"=1+1 not a formula, just text"
+R0465,09/03/2026,Peshawar,45-54,Dissatisfied,No,
+R0466,23/03/2026,Multan,45-54,Very satisfied,Yes,
+R0467,06/03/2026,Karachi,18-24,Dissatisfied,Yes,
+R0468,08/04/2026,Karachi,18-24,,Yes,
+R0469,30/03/2026,Islamabad,35-44,Very satisfied,No,Good service
+R0470,10/04/2026,Lahore,18-24,Neutral,Maybe,
+R0471,03/04/2026,Karachi,25-34,Satisfied,No,
+R0472,14/03/2026,Multan,45-54,Very satisfied,Yes,"=1+1 not a formula, just text"
+R0473,19/03/2026,Karachi,45-54,Dissatisfied,Maybe,
+R0474,21/03/2026,Karachi,55+,Satisfied,No,
+R0475,29/03/2026,Peshawar,55+,Dissatisfied,Yes,
+R0476,14/04/2026,Lahore,25-34,Satisfied,Yes,Good service
+R0477,02/04/2026,Islamabad,55+,Neutral,Yes,Good service
+R0478,17/03/2026,Peshawar,45-54,,No,
+R0479,11/03/2026,Lahore,55+,Neutral,Yes,"=1+1 not a formula, just text"
+R0480,01/03/2026,Islamabad,55+,Dissatisfied,Yes,Too slow
+R0481,03/04/2026,Peshawar,45-54,Neutral,No,
+R0482,01/03/2026,Islamabad  ,25-34,Very satisfied,Yes,
+R0483,21/03/2026,Islamabad,45-54,Dissatisfied,Maybe,Too slow
+R0484,27/03/2026,Karachi,55+,Satisfied,Yes,"=1+1 not a formula, just text"
+R0485,26/03/2026,Peshawar,25-34,Very satisfied,No,Too slow
+R0486,02/03/2026,Multan,35-44,Neutral,No,
+R0487,22/03/2026,Peshawar,55+,Neutral,Yes,Too slow
+R0488,04/04/2026,Quetta,18-24,Neutral,No,"=1+1 not a formula, just text"
+R0489,12/04/2026,Lahore,18-24,Neutral,Yes,Good service
+R0490,17/03/2026,Islamabad,55+,Neutral,Yes,Too slow
+R0491,20/03/2026,Quetta,25-34,Satisfied,Yes,Too slow
+R0492,05/04/2026,Karachi,55+,Satisfied,Yes,Too slow
+R0493,11/04/2026,Quetta,45-54,Satisfied,Yes,Good service
+R0494,06/04/2026,Peshawar,45-54,Dissatisfied,Maybe,
+R0495,10/03/2026,Karachi,25-34,Neutral,No,
+R0496,03/04/2026,Lahore,35-44,,No,Good service
+R0497,02/03/2026,Quetta,45-54,Neutral,Maybe,
+R0498,13/04/2026,Multan,55+,Satisfied,Yes,"=1+1 not a formula, just text"
+R0499,31/03/2026,,18-24,,No,"=1+1 not a formula, just text"
+R0500,26/03/2026,Multan,45-54,Very satisfied,Maybe,"=1+1 not a formula, just text"

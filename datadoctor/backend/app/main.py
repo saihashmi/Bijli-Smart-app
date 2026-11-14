@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
 from .errors import install_error_handlers
+from .middleware.headers import SecurityHeadersMiddleware
 from .middleware.upload_limit import UploadSizeLimitMiddleware
 from .migrate import upgrade_to_head
 from .routers import analyst, analytics, cleaning, datasets, exports, health, sessions
@@ -45,6 +46,7 @@ app = FastAPI(
 )
 install_error_handlers(app)
 app.add_middleware(UploadSizeLimitMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 
 if settings.cors_origins:  # same-origin via the Next.js proxy by default; CORS only if configured
     app.add_middleware(

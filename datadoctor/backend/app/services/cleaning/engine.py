@@ -19,7 +19,7 @@ SAMPLE_ROWS = 8
 def validate(op_type: str, parameters: dict[str, Any]):
     spec = REGISTRY.get(op_type)
     if spec is None:
-        raise AppError(422, "UNKNOWN_OPERATION", f"Unknown cleaning operation “{op_type}”.")
+        raise AppError(422, "UNKNOWN_OPERATION", "Unknown cleaning operation.")
     try:
         return spec, spec.model.model_validate(parameters or {})
     except ValidationError as e:

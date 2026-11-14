@@ -284,6 +284,7 @@ async def undo(
 async def reset(
     session_id: str, body: ResetRequest, ws: Workspace = Depends(current_workspace), db: Session = Depends(get_db)
 ) -> dict[str, Any]:
+    owned_session(db, ws, session_id)  # ownership before anything else: strangers always get 404
     if not body.confirm:
         raise AppError(409, "CONFIRMATION_REQUIRED", "Resetting undoes every change. Please confirm it.")
     return await _undo(db, ws, session_id, None, "reset")

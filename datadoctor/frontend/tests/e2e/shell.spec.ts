@@ -125,3 +125,25 @@ test("command palette: open with the keyboard, search, run a command", async ({ 
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toBeHidden();
 });
+
+test("pages are served with security headers and load nothing from other origins", async ({ page }) => {
+  const foreign: string[] = [];
+  page.on("request", (r) => {
+    const url = new URL(r.url());
+    if (!["127.0.0.1", "localhost"].includes(url.hostname) && !["data:", "blob:"].includes(url.protocol)) foreign.push(r.url());
+  });
+  const violations: string[] = [];
+  page.on("console", (m) => /Content Security Policy|Refused to/i.test(m.text()) && violations.push(m.text()));
+  const res = await page.goto("/");
+  const h = res!.headers();
+  expect(h["content-security-policy"]).toContain("default-src 'self'");
+  expect(h["content-security-policy"]).toContain("frame-ancestors 'none'");
+  expect(h["x-content-type-options"]).toBe("nosniff");
+  expect(h["x-frame-options"]).toBe("DENY");
+  expect(h["x-powered-by"]).toBeUndefined();
+  await page.goto("/upload");
+  await page.goto("/settings");
+  await page.waitForLoadState("networkidle");
+  expect(foreign).toEqual([]);
+  expect(violations).toEqual([]);
+});
