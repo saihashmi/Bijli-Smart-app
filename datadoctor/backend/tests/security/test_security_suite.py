@@ -12,6 +12,8 @@ from tests.fixtures import builders as fx
 
 MARKER = "ZXQ-PRIVATE-7731"  # stands for confidential cell content
 REPO = Path(__file__).parents[4]
+# Routes with a path parameter that is NOT a private resource: the bundled sample catalogue is the same for everyone.
+SHARED = {"/api/samples/{sample_id}/load"}
 
 
 def _session(client, data=None, name="invoices.xlsx"):
@@ -35,7 +37,7 @@ def test_every_resource_route_refuses_other_workspaces(client, other_client):
     missing = {"dataset_id": nowhere, "session_id": nowhere, "job_id": nowhere}
     checked = 0
     for template, methods in app.openapi()["paths"].items():
-        if "{" not in template:
+        if "{" not in template or template in SHARED:
             continue
         path = template
         for key, value in values.items():

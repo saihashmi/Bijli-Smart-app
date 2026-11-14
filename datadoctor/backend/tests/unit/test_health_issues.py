@@ -105,3 +105,17 @@ def test_finalize_hides_resolved_issues():
     assert ("Q16", "CNIC") not in codes and ("Q11", "D") not in codes
     # Resolving the ambiguous dates also raises format consistency for that column.
     assert out["health"]["score"] > finalize(p, [], {})["health"]["score"]
+
+
+def test_score_is_100_only_when_every_component_is_perfect():
+    import pandas as pd
+
+    from app.services.profiling.health import health_score
+    from app.services.profiling.profile import dataset_profile
+
+    clean = pd.DataFrame({"a": [float(i) for i in range(2000)], "b": [f"x{i}" for i in range(2000)]}).astype(object)
+    assert health_score(dataset_profile(clean))["score"] == 100
+    nearly = clean.copy()
+    nearly.loc[1999] = nearly.loc[0]  # one duplicate row in 2,000: 99.99 before rounding
+    result = health_score(dataset_profile(nearly))
+    assert result["score"] == 99 and "100 is shown only when" in result["formula"]

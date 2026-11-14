@@ -4,6 +4,7 @@ import {
   ServerCog, ShieldCheck, Stethoscope, Store, Timer, Users,
 } from "lucide-react";
 import { CompareSlider } from "@/components/marketing/compare-slider";
+import { Showcase } from "@/components/marketing/showcase";
 import { HeroVisual } from "@/components/marketing/hero-visual";
 import { StoryFlow } from "@/components/marketing/story-flow";
 import { Button } from "@/components/ui/button";
@@ -80,6 +81,16 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl space-y-12 px-4 py-20 sm:px-6">
           <SectionHeading eyebrow="How it works" title="From upload to answer in five steps" text="The same order you would work in Excel. Faster, and with an undo button." />
           <StoryFlow />
+        </div>
+      </section>
+
+      {/* Product tour: real screenshots */}
+      <section id="tour" className="scroll-mt-20 border-t border-white/10">
+        <div className="mx-auto max-w-6xl space-y-10 px-4 py-20 sm:px-6">
+          <SectionHeading eyebrow="A look inside" title="The product, as it actually looks" text="No mock-ups. These are screens of the app itself." />
+          <Reveal>
+            <Showcase />
+          </Reveal>
         </div>
       </section>
 

@@ -15,7 +15,7 @@ WEIGHTS = {"completeness": 0.35, "uniqueness": 0.20, "type_consistency": 0.25, "
 BANDS = [(90, "Excellent"), (75, "Good"), (50, "Needs attention"), (0, "Poor")]
 FORMULA = (
     "Score = round(100 × (0.35 × Completeness + 0.20 × Uniqueness + 0.25 × Type consistency "
-    "+ 0.20 × Format consistency))"
+    "+ 0.20 × Format consistency)). 100 is shown only when all four parts are perfect; otherwise the most is 99."
 )
 LIMITATIONS = [
     "The score measures structural quality only: missing values, duplicates, consistent types and formats.",
@@ -55,6 +55,8 @@ def health_score(profile: dict[str, Any], resolved_date_columns: set[str] | None
         "format_consistency": format_consistency,
     }
     score = round(100 * sum(WEIGHTS[k] * v for k, v in values.items()))
+    if score == 100 and any(v < 1 for v in values.values()):
+        score = 99  # 99.6 must not be shown as a perfect 100 while something is still wrong
     explain = {
         "completeness": f"{profile['missing_cells']:,} of {total_cells:,} cells are missing.",
         "uniqueness": f"{profile['duplicate_rows']:,} of {rows:,} rows are exact duplicates of an earlier row.",

@@ -23,6 +23,11 @@ def _list(value: str) -> list[str]:
 class Settings:
     app_version: str = "0.1.0"
     storage_dir: Path = field(default_factory=lambda: Path(_env("STORAGE_DIR", "./storage")).resolve())
+    samples_dir: Path = field(
+        default_factory=lambda: Path(
+            _env("SAMPLES_DIR", str(Path(__file__).resolve().parents[2] / "sample-data"))
+        ).resolve()
+    )
     database_url: str = field(default_factory=lambda: _env("DATABASE_URL", ""))
     # Limits (SPEC D4)
     max_upload_mb: int = field(default_factory=lambda: int(_env("MAX_UPLOAD_MB", "20")))

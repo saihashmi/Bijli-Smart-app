@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertTriangle, ArrowRight, FileSpreadsheet, Info, Loader2, RotateCcw, X } from "lucide-react";
+import { AlertTriangle, ArrowRight, FileSpreadsheet, FlaskConical, Info, Loader2, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
-import { api, ApiError, uploadFile, type AnalysisSession, type Dataset, type Peek } from "@/lib/api";
+import { api, ApiError, uploadFile, type AnalysisSession, type Dataset, type Peek, type SampleDataset } from "@/lib/api";
 import { formatBytes, formatDate, precheckFile } from "@/lib/format";
 import { useSettings } from "@/lib/use-preferences";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -38,6 +38,11 @@ export function UploadStudio() {
   const [peek, setPeek] = useState<Peek | null>(null);
   const [peekError, setPeekError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
+  const [samples, setSamples] = useState<SampleDataset[]>([]);
+  const [loadingSample, setLoadingSample] = useState<string | null>(null);
+  useEffect(() => {
+    api.samples().then((r) => setSamples(r.samples)).catch(() => setSamples([])); // optional: hidden when not installed
+  }, []);
   const [analysis, setAnalysis] = useState<Record<string, StageStatus> | null>(null);
   const [recent, setRecent] = useState<AnalysisSession[]>([]);
   const abort = useRef<AbortController | null>(null);
@@ -109,6 +114,22 @@ export function UploadStudio() {
     }
   }
 
+  async function loadSample(sample: SampleDataset) {
+    setError(null);
+    setLoadingSample(sample.id);
+    try {
+      const res = await api.loadSample(sample.id);
+      showDataset(res.dataset);
+      setHeaderRow(res.header_row); // some samples have a title row above the header, as real files often do
+      router.replace(`/upload?dataset=${res.dataset.id}`, { scroll: false });
+      toast.success(`Sample “${sample.title}” loaded. It is synthetic data.`);
+    } catch (e) {
+      setError({ title: "The sample could not be loaded", message: e instanceof ApiError ? e.message : "Unknown error." });
+    } finally {
+      setLoadingSample(null);
+    }
+  }
+
   async function start(ds: Dataset) {
     if (sheet === null) return;
     setStarting(true);
@@ -149,6 +170,39 @@ export function UploadStudio() {
       )}
 
       {phase.kind === "pick" && <Dropzone maxMb={maxMb} onFile={handleFile} />}
+
+      {phase.kind === "pick" && !resumeId && samples.length > 0 && (
+        <section aria-labelledby="samples-heading" className="space-y-3" data-testid="samples">
+          <div>
+            <h2 id="samples-heading" className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <FlaskConical className="size-4" aria-hidden />
+              No file to hand? Try a sample
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              These are synthetic datasets made for demonstration. They describe no real person or organisation and are messy on purpose.
+            </p>
+          </div>
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {samples.map((s) => (
+              <li key={s.id}>
+                <button
+                  type="button"
+                  disabled={loadingSample !== null}
+                  onClick={() => loadSample(s)}
+                  className="flex h-full w-full cursor-pointer flex-col gap-1 rounded-xl border bg-card p-4 text-left transition-all duration-200 outline-none hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait disabled:opacity-60"
+                >
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="font-medium">{s.title}</span>
+                    {loadingSample === s.id ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Badge variant="outline">Sample</Badge>}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{s.rows.toLocaleString("en-US")} rows</span>
+                  <span className="text-sm text-muted-foreground">{s.shows}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {phase.kind === "pick" && !resumeId && recent.length > 0 && (
         <section aria-labelledby="recent-heading" className="space-y-3">

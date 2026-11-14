@@ -76,3 +76,24 @@ test("the 3D library is not shipped to workspace pages", async ({ page }) => {
   await page.waitForLoadState("networkidle");
   expect(scripts, "three.js must only load on the landing page").toEqual([]);
 });
+
+
+test("product tour shows real screenshots and is keyboard operable", async ({ page }) => {
+  await page.goto("/");
+  const tour = page.getByTestId("showcase");
+  await tour.scrollIntoViewIfNeeded();
+  await expect(tour.getByRole("tab")).toHaveCount(5);
+  await expect(tour.getByRole("tab", { name: "Data Health" })).toHaveAttribute("aria-selected", "true");
+  await expect(tour).toContainText("bundled synthetic sales sample");
+  const image = tour.getByRole("img");
+  await expect(image).toHaveAttribute("alt", /Data Health Center/);
+  await expect.poll(() => image.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth)).toBeGreaterThan(300);
+
+  await tour.getByRole("tab", { name: "Data Health" }).focus();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  await expect(tour.getByRole("tab", { name: "Dashboard" })).toHaveAttribute("aria-selected", "true");
+  await expect(tour.getByRole("tab", { name: "Dashboard" })).toBeFocused();
+  await expect(image).toHaveAttribute("alt", /Dashboard Studio/);
+  await expect.poll(() => image.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth)).toBeGreaterThan(300);
+});

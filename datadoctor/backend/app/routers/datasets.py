@@ -6,6 +6,7 @@ import hashlib
 import uuid
 from datetime import timedelta
 from pathlib import Path
+from typing import Any
 
 from fastapi import APIRouter, Depends, File, Query, UploadFile
 from fastapi.concurrency import run_in_threadpool
@@ -205,3 +206,77 @@ async def peek_sheet(
         total_columns=sheet.column_count or 0,
         truncated_columns=(sheet.column_count or 0) > 50,
     )
+
+
+# ---------- bundled sample datasets ----------
+# Synthetic files shipped with the app (sample-data/generate.py). They go through exactly the same checks and
+# pipeline as an upload, and their names say they are samples, so they can never be mistaken for the user's data.
+SAMPLES: dict[str, dict[str, Any]] = {
+    "sales": {
+        "file": "sales_orders.xlsx",
+        "title": "Sales orders",
+        "rows": 603,
+        "header_row": 0,
+        "shows": "Amounts stored as text, ambiguous dates, spelling variants and duplicate rows",
+    },
+    "clinic": {
+        "file": "clinic_visits.xlsx",
+        "title": "Clinic visits",
+        "rows": 450,
+        "header_row": 0,
+        "shows": "Personal-data columns to mark as sensitive, impossible dates and extreme values",
+    },
+    "hr": {
+        "file": "hr_employees.csv",
+        "title": "Employees",
+        "rows": 380,
+        "header_row": 0,
+        "shows": "A semicolon-separated file with salaries written as text and repeated IDs",
+    },
+    "inventory": {
+        "file": "inventory_stock.xlsx",
+        "title": "Inventory",
+        "rows": 320,
+        "header_row": 2,
+        "shows": "A title row above the header, an empty column and negative stock",
+    },
+    "survey": {
+        "file": "survey_responses.csv",
+        "title": "Survey responses",
+        "rows": 500,
+        "header_row": 0,
+        "shows": "Categories only, blank answers and day-first dates",
+    },
+}
+
+
+def _sample_path(sample_id: str) -> Path:
+    spec = SAMPLES.get(sample_id)
+    if spec is None:
+        raise AppError(404, "NOT_FOUND", "Sample dataset not found.")
+    path = settings.samples_dir / spec["file"]
+    if not path.is_file():
+        raise AppError(404, "NOT_FOUND", "Sample datasets are not installed on this server.")
+    return path
+
+
+@router.get("/samples")
+def list_samples() -> dict[str, Any]:
+    available = [
+        {"id": k, **{f: v[f] for f in ("title", "rows", "header_row", "shows")}}
+        for k, v in SAMPLES.items()
+        if (settings.samples_dir / v["file"]).is_file()
+    ]
+    return {
+        "samples": available,
+        "note": "Synthetic data generated for demonstration. It describes no real person or organisation.",
+    }
+
+
+@router.post("/samples/{sample_id}/load", status_code=201, dependencies=[Depends(rate_limit("upload"))])
+async def load_sample(sample_id: str, ws: Workspace = Depends(current_workspace), db: Session = Depends(get_db)):
+    path = _sample_path(sample_id)
+    stem, _, ext = SAMPLES[sample_id]["file"].rpartition(".")
+    with path.open("rb") as fh:
+        dataset = await upload(file=UploadFile(file=fh, filename=f"{stem} (synthetic sample).{ext}"), ws=ws, db=db)
+    return {"dataset": dataset, "header_row": SAMPLES[sample_id]["header_row"]}

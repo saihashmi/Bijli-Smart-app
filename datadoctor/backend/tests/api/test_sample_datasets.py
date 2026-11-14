@@ -123,3 +123,22 @@ def test_survey_formula_like_comment_stays_text_everywhere(client):
     comments = {r[6].value for r in wb["Cleaned Data"].iter_rows(min_row=2)}
     assert "'=1+1 not a formula, just text" in comments and "=1+1 not a formula, just text" not in comments
     assert all(c.data_type != "f" for row in wb["Cleaned Data"].iter_rows() for c in row)
+
+
+def test_bundled_samples_load_through_the_normal_pipeline_and_are_labelled(client, other_client):
+    listed = client.get("/api/samples").json()
+    assert [s["id"] for s in listed["samples"]] == ["sales", "clinic", "hr", "inventory", "survey"]
+    assert "Synthetic" in listed["note"]
+    for sample in listed["samples"]:
+        res = client.post(f"/api/samples/{sample['id']}/load")
+        assert res.status_code == 201, res.text
+        body = res.json()
+        assert "(synthetic sample)" in body["dataset"]["original_filename"]  # never passes as the user's own file
+        sess = client.post(
+            f"/api/datasets/{body['dataset']['id']}/sessions", json={"sheet_index": 0, "header_row": body["header_row"]}
+        )
+        assert sess.status_code == 201, sess.text
+        assert client.get(f"/api/sessions/{sess.json()['id']}/profile").json()["rows"] == sample["rows"]
+    assert len(client.get("/api/datasets").json()) == 5 and other_client.get("/api/datasets").json() == []
+    for bad in ["nope", "..%2F..%2Fetc%2Fpasswd", "sales_orders.xlsx"]:
+        assert client.post(f"/api/samples/{bad}/load").status_code == 404

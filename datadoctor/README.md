@@ -36,7 +36,7 @@ make backend                # terminal 1: API on http://127.0.0.1:8000
 make frontend               # terminal 2: app on http://localhost:3000
 ```
 
-Open http://localhost:3000. Data is stored under `STORAGE_DIR` (default `backend/storage`): uploads, working snapshots, exports and a SQLite file with metadata only.
+Open http://localhost:3000. No file to hand? The Upload Studio offers five synthetic sample datasets (see [`sample-data/`](sample-data/README.md)). Data is stored under `STORAGE_DIR` (default `backend/storage`): uploads, working snapshots, exports and a SQLite file with metadata only.
 
 ### Optional: AI explanations
 

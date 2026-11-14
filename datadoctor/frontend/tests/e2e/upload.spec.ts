@@ -130,3 +130,19 @@ test("regression: files between 10 MB and the 20 MB limit pass through the proxy
   expect(res.status()).toBe(413);
   expect((await res.json()).error.code).toBe("FILE_TOO_LARGE");
 });
+
+test("a bundled sample opens like an upload and is labelled as synthetic", async ({ page }) => {
+  await page.goto("/upload");
+  const samples = page.getByTestId("samples");
+  await expect(samples.getByRole("button")).toHaveCount(5);
+  await expect(samples).toContainText("They describe no real person or organisation");
+  await samples.getByRole("button", { name: /Inventory/ }).click();
+  await expect(page.getByTestId("raw-preview")).toBeVisible();
+  await expect(page.getByText("inventory_stock (synthetic sample).xlsx").first()).toBeVisible();
+  await page.getByRole("button", { name: "Start analysis" }).click();
+  await expect(page).toHaveURL(/\/s\/[0-9a-f-]{36}\/health$/);
+  await expect(page.getByTestId("session-file")).toHaveText("inventory_stock (synthetic sample).xlsx");
+  // the suggested header row (3) was used, so the real column names are found
+  await page.goto(page.url().replace(/\/health$/, "/dashboard"));
+  await expect(page.getByRole("region", { name: "Rows", exact: true }).getByTestId("kpi-value")).toContainText("320");
+});

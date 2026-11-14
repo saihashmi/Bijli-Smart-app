@@ -434,12 +434,16 @@ export function uploadFile(
   });
 }
 
+export type SampleDataset = { id: string; title: string; rows: number; header_row: number; shows: string };
+
 // ---------- endpoints ----------
 export const api = {
   health: () => request<ServerHealth>("/health"),
   settings: () => request<SettingsResponse>("/settings"),
   updateSettings: (patch: Partial<Preferences>) => request<SettingsResponse>("/settings", json("PUT", patch)),
   deleteAllData: () => request<{ datasets_deleted: number }>("/workspace/data", { method: "DELETE" }),
+  samples: () => request<{ samples: SampleDataset[]; note: string }>("/samples"),
+  loadSample: (id: string) => request<{ dataset: Dataset; header_row: number }>(`/samples/${id}/load`, { method: "POST" }),
   datasets: () => request<Dataset[]>("/datasets"),
   dataset: (id: string) => request<Dataset>(`/datasets/${id}`),
   deleteDataset: (id: string) => request<void>(`/datasets/${id}`, { method: "DELETE" }),
