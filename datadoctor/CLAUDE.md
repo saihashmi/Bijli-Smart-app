@@ -4,7 +4,7 @@ Read this first when continuing work. Source of truth: `SPEC.md` (approved) and 
 
 ## Status
 - Phase: **03 BUILD**. SPEC and PLAN approved 2026-11-12.
-- Current milestone: **M16 Docker complete** (all six product screens work end to end, also in containers). The product owner delegated design and technical decisions on 2026-11-13 ("choose the best yourself"): milestones proceed without per-milestone approval, still with run/test/document/commit each time. Ask only before paid services, deployment, or deleting existing work. Next: U14 performance → M15 polish → phase 04 TEST sign-off (see UI_PLAN.md).
+- Current milestone: **U14 performance measured; build milestones M1–M16 and U1–U14 done** (all six screens work end to end, also in containers). The product owner delegated design and technical decisions on 2026-11-13 ("choose the best yourself"): milestones proceed without per-milestone approval, still with run/test/document/commit each time. Ask only before paid services, deployment, or deleting existing work. Next: M15 polish items, then phase 04 TEST sign-off with the product owner (see UI_PLAN.md).
 - Branch: `ccr-47143d17-8h5n17`. Push with `git push -u origin ccr-47143d17-8h5n17`.
 
 ## Workflow rules (from the product owner)
@@ -151,10 +151,24 @@ See PLAN.md §2 and §6.
 - **M14. Security, edge-case and sample-data tests** (2026-11-14): `sample-data/` with five synthetic datasets from `generate.py` (fixed seeds; sales, clinic visits, HR, inventory, survey) and a README saying what each demonstrates. `tests/api/test_sample_datasets.py` runs each through upload → profile (expected issue codes) → issue drill-down → every recommended widget → every suggested question → a cleaning step → Excel and PDF export, and recomputes the sales total independently from the generator's rules. `tests/security/test_security_suite.py`: every parameterised route in the OpenAPI table answers a foreign workspace exactly as it answers a non-existent resource (so a new route without an ownership check fails the test); forged/tampered cookies; hostile file names; headers and CORS; errors reveal no internals or submitted values; **logs never contain cell values, file names or questions**; instruction-like text in data is inert; rate limiting; no secrets or `.env` tracked. Added `middleware/headers.py` (nosniff, frame deny, no-referrer, no-store) and frontend headers incl. a Content-Security-Policy (`next.config.ts`; self-only, no external origins). Found and fixed: "unknown cleaning operation" echoed the submitted name; the reset endpoint checked confirmation before ownership. Tests: pytest 305, Playwright 214 passed + 2 skips; `make lint` clean.
 - **U12. Landing showcase and "try a sample"** (2026-11-14): `GET /api/samples`, `POST /api/samples/{id}/load` (fixed catalogue in `routers/datasets.py`, `SAMPLES_DIR` setting; a sample goes through the normal upload pipeline and its name ends in "(synthetic sample)"); Upload Studio lists the five samples with what each demonstrates and pre-selects the right header row. Landing page "A look inside" tour (`components/marketing/showcase.tsx`, keyboard-operable tabs) shows five **real screenshots** in `public/showcase/`, captured from the running app on the sales sample by `scripts/capture-showcase.mjs` (re-run it after visible UI changes), captioned as synthetic sample data. **Decision:** the Data Health Score shows 100 only when all four components are perfect; a rounded 99.5+ is capped at 99 (a sheet with duplicates and a high-severity issue had displayed "100 Excellent"). The formula text says so. Tests: pytest 307, Playwright 222 passed + 2 skips.
 - **M16. Docker** (2026-11-14): `backend/Dockerfile` (python:3.12-slim, uid 10001, `/data` volume, health check, one uvicorn worker because limits/locks/caches are in memory), `frontend/Dockerfile` (node:22-slim, multi-stage, Next standalone server as user `node`), `docker-compose.yml` (read-only root filesystems, tmpfs, all capabilities dropped, no-new-privileges, web port bound to 127.0.0.1, API not published, optional `.env`), `.dockerignore`. Optional build secret `ca` for TLS-inspecting proxies (never disables verification). **Verified here:** both images build, the stack starts healthy, processes run as non-root, and the full Playwright suite passes against the containers (222 passed, 2 skips). Build context is `datadoctor/`. `BACKEND_URL` and `MAX_UPLOAD_MB` are baked into the frontend image at build time. Nothing has been deployed anywhere.
+- **U14. Performance measurements** (2026-11-14): `frontend/scripts/measure-performance.mjs` (production build, cache off, compressed bytes on the wire, 1280 px, this container, local servers, so timings are best-case and only comparable on the same machine).
+
+  | Screen | JS | CSS | Images | Fonts | LCP | CLS |
+  |---|---|---|---|---|---|---|
+  | Landing | 577 kB | 14 kB | 45 kB | 48 kB | 168 ms | 0.000 |
+  | Upload Studio | 335 kB | 14 kB | 0 | 48 kB | 76 ms | 0.000 |
+  | Data Health | 381 kB | 14 kB | 0 | 48 kB | 460 ms | 0.000 |
+  | Cleaning Studio | 377 kB | 14 kB | 0 | 48 kB | 292 ms | 0.000 |
+  | Dashboard Studio | 500 kB | 14 kB | 0 | 48 kB | 336 ms | 0.007 |
+  | AI Analyst | 495 kB | 14 kB | 0 | 48 kB | 364 ms | 0.000 |
+  | Export Center | 350 kB | 14 kB | 0 | 48 kB | 180 ms | 0.000 |
+
+  The JS figures include what Next.js prefetches for linked pages; the largest four chunks on Upload total about 195 kB. The landing figure includes the lazily loaded 3D scene (three.js), which loads after the first paint; the UI_PLAN target of 200 kB for the landing page's initial scripts is **not met when the 3D scene is counted**, and it has not been measured separately. Recharts loads only on Dashboard and AI Analyst. Scripts are served gzip-compressed. Found and fixed: every session screen shifted by one line while loading (CLS 0.31–0.40) because the "Deleted automatically on" date arrived late and wrapped the header; the space is now reserved (CLS 0.00). Not measured: real-network or low-end-device timings, Lighthouse scores.
 
 ## Pending
 - `DESIGN_SPEC.md` direction A and `UI_PLAN.md` are in force (decisions delegated).
-- Next: U14 performance measurements → M15 polish → phase 04 TEST sign-off with the product owner. Public deployment stays blocked until authentication exists and the owner approves.
+- Open polish items (M15), none blocking: "only rows with issues" grid filter; drag-and-drop widget reordering; pie/scatter drawings and non-Latin fonts in the PDF; storing verified AI explanations (needs a schema change, so the owner's approval); a manual screen-reader pass; a live Groq test with a real key; landing initial-script weight without the 3D scene.
+- Then phase 04 TEST sign-off with the product owner. Public deployment stays blocked until authentication exists and the owner approves.
 
 ## How to continue
 1. Read SPEC.md and PLAN.md.

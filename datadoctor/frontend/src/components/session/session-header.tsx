@@ -10,7 +10,7 @@ export function SessionHeader({ session }: { session: AnalysisSession }) {
   const settings = useSettings();
   const expires = settings
     ? formatDate(new Date(session.expires_at), settings.preferences.display_timezone, settings.preferences.date_display)
-    : "…";
+    : null;
   return (
     <div className="mb-6 flex flex-col gap-2 rounded-xl border bg-card px-4 py-3 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5">
       <span className="flex min-w-0 items-center gap-2 font-medium">
@@ -24,7 +24,10 @@ export function SessionHeader({ session }: { session: AnalysisSession }) {
       <span className="text-muted-foreground">
         {formatInteger(session.rows ?? 0)} rows × {formatInteger(session.columns ?? 0)} columns · {formatBytes(session.file_size)}
       </span>
-      <span className="text-muted-foreground sm:ml-auto">Deleted automatically on {expires}</span>
+      {/* Same width before and after the date format loads, so the page below does not jump. */}
+      <span className="text-muted-foreground sm:ml-auto">
+        Deleted automatically on <span className={expires ? undefined : "invisible"}>{expires ?? "00/00/0000"}</span>
+      </span>
       <Badge variant="secondary">{session.version === 0 ? "Original data" : `Cleaned · v${session.version}`}</Badge>
     </div>
   );
